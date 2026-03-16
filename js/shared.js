@@ -1,5 +1,5 @@
 // ── VERSION ──
-const VERSION = 'v1.1.2';
+const VERSION = 'v1.1.3';
 document.querySelector('.version-badge').textContent = VERSION;
 
 // ── CONFIG & SHARED STATE ──
