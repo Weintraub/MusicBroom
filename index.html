@@ -56,6 +56,14 @@
     color: var(--green);
   }
   .logo span { color: var(--text); }
+  .version-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text3);
+    align-self: flex-end;
+    margin-bottom: 3px;
+    margin-left: 6px;
+  }
   .nav-tabs { display: flex; gap: 4px; }
   .tab-btn {
     background: none;
@@ -575,7 +583,10 @@
 <!-- APP SHELL (hidden until authed) -->
 <div id="app" style="display:none;">
   <nav>
-    <div class="logo">Music<span>Broom</span></div>
+    <div style="display:flex;align-items:flex-end;">
+      <div class="logo">Music<span>Broom</span></div>
+      <span class="version-badge">v1.0.0</span>
+    </div>
     <div class="nav-tabs">
       <button class="tab-btn active" onclick="switchTab('analyzer')">Analyzer</button>
       <button class="tab-btn" onclick="switchTab('sorter')">Sorter</button>
