@@ -55,13 +55,13 @@ async function loadSorterBatch() {
   // Fetch genres for new tracks
   for (let i = 0; i < newTracks.length; i += 5) {
     await Promise.all(newTracks.slice(i, i+5).map(async t => {
-      t._genre = await getGenreForTrack(t);
+      t._genres = await getGenreForTrack(t);
     }));
     renderSorterTracks();
   }
 
   // Genre filter options
-  const genres = [...new Set(sorterTracks.map(t=>t._genre).filter(Boolean))].sort();
+  const genres = [...new Set(sorterTracks.flatMap(t=>t._genres||[]))].sort();
   const sel = document.getElementById('sorter-genre-filter');
   const cur = sel.value;
   sel.innerHTML = '<option value="">All genres</option>' + genres.map(g=>`<option value="${esc(g)}" ${g===cur?'selected':''}>${esc(g)}</option>`).join('');
@@ -80,7 +80,7 @@ function renderSorterTracks() {
   const genreFilter = document.getElementById('sorter-genre-filter').value;
   const filtered = sorterTracks.filter(t => {
     if (search && !t.name.toLowerCase().includes(search) && !t.artists.map(a=>a.name.toLowerCase()).join(' ').includes(search)) return false;
-    if (genreFilter && t._genre !== genreFilter) return false;
+    if (genreFilter && !(t._genres||[]).includes(genreFilter)) return false;
     return true;
   });
   document.getElementById('sorter-tracks').innerHTML = filtered.map((t, i) => `
@@ -91,7 +91,7 @@ function renderSorterTracks() {
         <div class="track-name">${esc(t.name)}</div>
         <div class="track-artist">${esc(t.artists.map(a=>a.name).join(', '))}</div>
       </div>
-      <div style="width:130px;"><span class="genre-pill ${t._genre ? 'has-genre' : ''}">${t._genre ? esc(t._genre) : '—'}</span></div>
+      <div style="width:130px;">${t._genres && t._genres.length ? t._genres.map(g=>`<span class="genre-pill has-genre">${esc(g)}</span>`).join(' ') : '<span class="genre-pill">—</span>'}</div>
       <div style="width:160px;">
         <button class="add-btn" id="add-${esc(t.id)}" onclick="openAddModal('${esc(t.id)}','${esc(t.name)}')">+ Add to playlist</button>
       </div>

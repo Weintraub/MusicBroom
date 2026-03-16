@@ -1,5 +1,5 @@
 // ── VERSION ──
-const VERSION = 'v1.4.4';
+const VERSION = 'v1.4.5';
 document.querySelector('.version-badge').textContent = VERSION;
 
 // ── CONFIG & SHARED STATE ──
@@ -46,21 +46,38 @@ const _skipTags = new Set(['seen live','favourites','favorites','love','awesome'
 
 const LASTFM_KEY = '559abd2a57b15032ded9dc936ed75816';
 
+async function _fetchLastfmTags(artistName, trackName) {
+  if (!LASTFM_KEY) return [];
+  const url = `https://ws.audioscrobbler.com/2.0/?method=track.getTopTags&artist=${encodeURIComponent(artistName)}&track=${encodeURIComponent(trackName)}&api_key=${LASTFM_KEY}&format=json`;
+  const r = await fetch(url).then(res => res.json()).catch(() => null);
+  const tags = r && r.toptags && r.toptags.tag;
+  if (!Array.isArray(tags)) return [];
+  return tags.map(t => t.name).filter(name => !_skipTags.has(name.toLowerCase()));
+}
+
+async function _fetchDeezerGenres(artistName, trackName) {
+  const r = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(artistName + ' ' + trackName)}&limit=1`).then(res => res.json()).catch(() => null);
+  const albumId = r && r.data && r.data[0] && r.data[0].album && r.data[0].album.id;
+  if (!albumId) return [];
+  const album = await fetch(`https://api.deezer.com/album/${albumId}`).then(res => res.json()).catch(() => null);
+  const genres = album && album.genres && album.genres.data;
+  if (!Array.isArray(genres)) return [];
+  return genres.map(g => g.name);
+}
+
 const _trackGenreCache = {};
 async function getGenreForTrack(track) {
-  if (!LASTFM_KEY || !track.artists || !track.artists.length) return null;
+  if (!track.artists || !track.artists.length) return [];
   const artistName = track.artists[0].name;
   const trackName = track.name;
-  if (!artistName || !trackName) return null;
+  if (!artistName || !trackName) return [];
   const cacheKey = `${artistName}\0${trackName}`;
   if (!(cacheKey in _trackGenreCache)) {
-    const url = `https://ws.audioscrobbler.com/2.0/?method=track.getTopTags&artist=${encodeURIComponent(artistName)}&track=${encodeURIComponent(trackName)}&api_key=${LASTFM_KEY}&format=json`;
-    const r = await fetch(url).then(res => res.json()).catch(() => null);
-    const tags = r && r.toptags && r.toptags.tag;
-    const genre = Array.isArray(tags)
-      ? (tags.find(t => !_skipTags.has(t.name.toLowerCase())) || {}).name || null
-      : null;
-    _trackGenreCache[cacheKey] = genre;
+    const [lastfm, deezer] = await Promise.all([
+      _fetchLastfmTags(artistName, trackName),
+      _fetchDeezerGenres(artistName, trackName),
+    ]);
+    _trackGenreCache[cacheKey] = [...new Set([...lastfm, ...deezer])];
   }
   return _trackGenreCache[cacheKey];
 }
