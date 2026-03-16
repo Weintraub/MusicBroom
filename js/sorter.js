@@ -111,13 +111,14 @@ function closeModal() {
 }
 
 async function addTrackToPlaylist(playlistId, playlistName) {
+  const trackId = pendingAddTrack;
   closeModal();
-  if (!pendingAddTrack) return;
-  const trackUri = `spotify:track:${pendingAddTrack}`;
+  if (!trackId) return;
+  const trackUri = `spotify:track:${trackId}`;
   const r = await api(`/playlists/${playlistId}/tracks`, 'POST', { uris: [trackUri] });
   if (r && r.snapshot_id) {
     showToast(`Added to "${playlistName}"`, 'ok');
-    const btn = document.getElementById('add-' + pendingAddTrack);
+    const btn = document.getElementById('add-' + trackId);
     if (btn) { btn.textContent = '✓ Added'; btn.classList.add('done'); btn.disabled = true; }
     const pl = allPlaylists.find(p=>p.id===playlistId);
     if (pl) { const t = pl.tracks || pl.items; if (t) t.total++; }
