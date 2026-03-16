@@ -821,7 +821,7 @@ async function loadPlaylists() {
     if (!r.next || r.items.length < 50) break;
     offset += 50;
   }
-  allPlaylists = items;
+  allPlaylists = items.filter(p => p && p.id && p.tracks);
   renderAnalyzerPlaylists();
   renderSorterPlaylists();
 }
