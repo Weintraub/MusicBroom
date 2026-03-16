@@ -39,6 +39,7 @@
     <p style="font-size:12px;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">Master playlist</p>
     <div class="playlist-controls">
       <button class="btn-ghost pl-filter-mine" onclick="setPlaylistFilter(playlistFilter === 'mine' ? 'all' : 'mine')">My playlists</button>
+      <button class="btn-ghost pl-filter-public" onclick="setPlaylistHidePrivate(!playlistHidePrivate)">Public only</button>
       <select class="pl-sort-select" onchange="setPlaylistSort(this.value)">
         <option value="default">Default order</option>
         <option value="tracks-desc">Most tracks first</option>

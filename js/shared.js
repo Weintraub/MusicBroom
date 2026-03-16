@@ -1,5 +1,5 @@
 // ── VERSION ──
-const VERSION = 'v1.1.5';
+const VERSION = 'v1.1.6';
 document.querySelector('.version-badge').textContent = VERSION;
 
 // ── CONFIG & SHARED STATE ──
@@ -15,6 +15,7 @@ let accessToken = sessionStorage.getItem('mb_token');
 let currentUserId = null;
 let playlistFilter = 'all'; // 'all' | 'mine'
 let playlistSort = 'default'; // 'default' | 'tracks-asc' | 'tracks-desc'
+let playlistHidePrivate = false;
 let allPlaylists = [];
 let genreCache = {};
 
@@ -55,6 +56,9 @@ function getFilteredSortedPlaylists() {
   if (playlistFilter === 'mine') {
     list = list.filter(p => p.owner && p.owner.id === currentUserId);
   }
+  if (playlistHidePrivate) {
+    list = list.filter(p => p.public !== false);
+  }
   if (playlistSort === 'tracks-asc') {
     list = list.slice().sort((a, b) => (a.tracks || a.items || {}).total - (b.tracks || b.items || {}).total);
   } else if (playlistSort === 'tracks-desc') {
@@ -66,6 +70,13 @@ function getFilteredSortedPlaylists() {
 function setPlaylistFilter(val) {
   playlistFilter = val;
   document.querySelectorAll('.pl-filter-mine').forEach(btn => btn.classList.toggle('active', val === 'mine'));
+  if (typeof renderAnalyzerPlaylists === 'function') renderAnalyzerPlaylists();
+  if (typeof renderSorterPlaylists === 'function') renderSorterPlaylists();
+}
+
+function setPlaylistHidePrivate(val) {
+  playlistHidePrivate = val;
+  document.querySelectorAll('.pl-filter-public').forEach(btn => btn.classList.toggle('active', val));
   if (typeof renderAnalyzerPlaylists === 'function') renderAnalyzerPlaylists();
   if (typeof renderSorterPlaylists === 'function') renderSorterPlaylists();
 }
