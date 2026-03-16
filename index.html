@@ -23,6 +23,11 @@
         <input type="text" id="client-id-input" placeholder="e.g. 4b3c1d2e..." />
       </div>
       <p class="field-note" style="margin-top:-6px;">Your Client ID from the <a href="https://developer.spotify.com/dashboard" style="color:var(--green);">Spotify Developer Dashboard</a>. The Redirect URI must be set to this page's URL.</p>
+      <div class="field-row" style="margin-top:12px;">
+        <label>Last.fm API Key</label>
+        <input type="text" id="lastfm-key-input" placeholder="e.g. a1b2c3d4..." />
+      </div>
+      <p class="field-note" style="margin-top:-6px;">Optional. Used for genre tags. Get a free key at <a href="https://www.last.fm/api/account/create" style="color:var(--green);">last.fm/api</a>.</p>
     </div>
     <button class="btn-primary" onclick="doLogin()">Authorize</button>
   </div>
@@ -40,6 +45,12 @@ const SCOPES = [
 
 let CLIENT_ID = localStorage.getItem('mb_client_id') || '';
 const REDIRECT_URI = window.location.href.split('#')[0].split('?')[0];
+
+// Pre-fill saved keys when config box opens
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('mb_lastfm_key');
+  if (saved) { const el = document.getElementById('lastfm-key-input'); if (el) el.value = saved; }
+});
 
 function generateCodeVerifier() {
   const array = new Uint8Array(64);
@@ -100,6 +111,10 @@ async function doLogin() {
   if (inp && inp.value.trim()) {
     CLIENT_ID = inp.value.trim();
     localStorage.setItem('mb_client_id', CLIENT_ID);
+  }
+  const lfmInp = document.getElementById('lastfm-key-input');
+  if (lfmInp && lfmInp.value.trim()) {
+    localStorage.setItem('mb_lastfm_key', lfmInp.value.trim());
   }
   if (!CLIENT_ID) { showToast('Please enter your Client ID', 'err'); return; }
   const verifier = generateCodeVerifier();

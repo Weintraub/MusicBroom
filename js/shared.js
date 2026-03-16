@@ -41,16 +41,25 @@ async function getAllPlaylistTracks(playlistId, limit=100, offset=0) {
   return api(`/playlists/${playlistId}/items?limit=${limit}&offset=${offset}&fields=total,next,items(item(id,name,duration_ms,artists(id,name),album(images)))`);
 }
 
+// Tags to skip — personal markers, not genres
+const _skipTags = new Set(['seen live','favourites','favorites','love','awesome','amazing','beautiful','indie','all','music','mellow','chill']);
+
 const _artistGenreCache = {};
 async function getGenreForTrack(track) {
-  if (!track.artists || !track.artists.length) return null;
-  const artistId = track.artists[0].id;
-  if (!artistId) return null;
-  if (!(artistId in _artistGenreCache)) {
-    const r = await api(`/artists/${artistId}`).catch(() => null);
-    _artistGenreCache[artistId] = (r && r.genres && r.genres[0]) || null;
+  const LASTFM_KEY = localStorage.getItem('mb_lastfm_key');
+  if (!LASTFM_KEY || !track.artists || !track.artists.length) return null;
+  const artistName = track.artists[0].name;
+  if (!artistName) return null;
+  if (!(artistName in _artistGenreCache)) {
+    const url = `https://ws.audioscrobbler.com/2.0/?method=artist.getTopTags&artist=${encodeURIComponent(artistName)}&api_key=${LASTFM_KEY}&format=json`;
+    const r = await fetch(url).then(res => res.json()).catch(() => null);
+    const tags = r && r.toptags && r.toptags.tag;
+    const genre = Array.isArray(tags)
+      ? (tags.find(t => !_skipTags.has(t.name.toLowerCase())) || {}).name || null
+      : null;
+    _artistGenreCache[artistName] = genre;
   }
-  return _artistGenreCache[artistId];
+  return _artistGenreCache[artistName];
 }
 
 // ── PLAYLIST FILTER / SORT ──
