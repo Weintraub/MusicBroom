@@ -813,11 +813,13 @@ async function getGenreForTrack(track) {
 // ── LOAD PLAYLISTS ──
 async function loadPlaylists() {
   let items = [];
-  let url = '/me/playlists?limit=50';
-  while (url) {
-    const r = await api(url.startsWith('/') ? url : url.replace('https://api.spotify.com/v1',''));
+  let offset = 0;
+  while (true) {
+    const r = await api(`/me/playlists?limit=50&offset=${offset}`);
+    if (!r || !r.items) break;
     items = items.concat(r.items);
-    url = r.next ? r.next.replace('https://api.spotify.com/v1','') : null;
+    if (!r.next || r.items.length < 50) break;
+    offset += 50;
   }
   allPlaylists = items;
   renderAnalyzerPlaylists();
