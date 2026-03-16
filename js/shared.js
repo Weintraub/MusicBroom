@@ -1,5 +1,5 @@
 // ── VERSION ──
-const VERSION = 'v1.3.1';
+const VERSION = 'v1.3.2';
 document.querySelector('.version-badge').textContent = VERSION;
 
 // ── CONFIG & SHARED STATE ──
@@ -39,6 +39,18 @@ async function api(path, method='GET', body=null) {
 
 async function getAllPlaylistTracks(playlistId, limit=100, offset=0) {
   return api(`/playlists/${playlistId}/items?limit=${limit}&offset=${offset}&fields=total,next,items(item(id,name,duration_ms,artists(id,name),album(images)))`);
+}
+
+const _artistGenreCache = {};
+async function getGenreForTrack(track) {
+  if (!track.artists || !track.artists.length) return null;
+  const artistId = track.artists[0].id;
+  if (!artistId) return null;
+  if (!(artistId in _artistGenreCache)) {
+    const r = await api(`/artists/${artistId}`).catch(() => null);
+    _artistGenreCache[artistId] = (r && r.genres && r.genres[0]) || null;
+  }
+  return _artistGenreCache[artistId];
 }
 
 // ── PLAYLIST FILTER / SORT ──
