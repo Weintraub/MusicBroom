@@ -31,7 +31,6 @@ async function analyzePlaylist(id) {
     document.getElementById('selected-analyzer-playlist-name').textContent = pl.name;
   }
 
-  document.getElementById('analyzer-empty').style.display = 'none';
   const res = document.getElementById('analyzer-result');
   res.style.display = '';
   document.getElementById('analyzer-tracks').innerHTML = '<div class="spinner"></div>';
