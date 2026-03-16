@@ -112,7 +112,7 @@ async function doLogin() {
     scope: SCOPES,
     code_challenge_method: 'S256',
     code_challenge: challenge,
-    show_dialog: 'false'
+    show_dialog: 'true'
   });
   window.location = 'https://accounts.spotify.com/authorize?' + params;
 }
