@@ -594,6 +594,29 @@ main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
 }
 .load-more-btn:hover { border-color: var(--border-bright); color: var(--text); }
 
+/* ── ANALYZER LAYOUT ── */
+.analyzer-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+.analyzer-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 72px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.analyzer-sidebar .playlist-grid {
+  grid-template-columns: 1fr;
+  margin-bottom: 0;
+}
+.analyzer-content {
+  flex: 1;
+  min-width: 0;
+}
+
 /* ── ANALYZE BUTTON ── */
 .analyze-btn {
   background: var(--green-muted);

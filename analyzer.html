@@ -33,30 +33,36 @@
   <div class="section-head">
     <h2>Playlist Analyzer</h2>
   </div>
-  <p style="color:var(--text2);margin-bottom:20px;font-size:13px;">Pick a playlist to see its stats and track list.</p>
 
-  <div class="playlist-controls">
-    <button class="btn-ghost pl-filter-mine" onclick="setPlaylistFilter(playlistFilter === 'mine' ? 'all' : 'mine')">My playlists</button>
-    <button class="btn-ghost pl-filter-public" onclick="setPlaylistHidePrivate(!playlistHidePrivate)">Public only</button>
-    <select class="pl-sort-select" onchange="setPlaylistSort(this.value)">
-      <option value="default">Default order</option>
-      <option value="tracks-desc">Most tracks first</option>
-      <option value="tracks-asc">Fewest tracks first</option>
-    </select>
-  </div>
-  <div id="analyzer-playlists" class="playlist-grid">
-    <div class="spinner"></div>
-  </div>
-
-  <div id="analyzer-result" style="display:none;">
-    <div class="stats-grid" id="analyzer-stats"></div>
-    <div class="track-table-wrap">
-      <div class="track-table-head">
-        <div class="col-num">#</div>
-        <div style="flex:1;">Track</div>
-        <div class="col-dur">Time</div>
+  <div class="analyzer-layout">
+    <div class="analyzer-sidebar">
+      <div class="playlist-controls">
+        <button class="btn-ghost pl-filter-mine" onclick="setPlaylistFilter(playlistFilter === 'mine' ? 'all' : 'mine')">My playlists</button>
+        <button class="btn-ghost pl-filter-public" onclick="setPlaylistHidePrivate(!playlistHidePrivate)">Public only</button>
+        <select class="pl-sort-select" onchange="setPlaylistSort(this.value)">
+          <option value="default">Default order</option>
+          <option value="tracks-desc">Most tracks first</option>
+          <option value="tracks-asc">Fewest tracks first</option>
+        </select>
       </div>
-      <div id="analyzer-tracks"></div>
+      <div id="analyzer-playlists" class="playlist-grid">
+        <div class="spinner"></div>
+      </div>
+    </div>
+
+    <div class="analyzer-content">
+      <div id="analyzer-result" style="display:none;">
+        <div class="stats-grid" id="analyzer-stats"></div>
+        <div class="track-table-wrap">
+          <div class="track-table-head">
+            <div class="col-num">#</div>
+            <div style="flex:1;">Track</div>
+            <div class="col-dur">Time</div>
+          </div>
+          <div id="analyzer-tracks"></div>
+        </div>
+      </div>
+      <div id="analyzer-empty" style="color:var(--text3);font-size:13px;padding-top:40px;">Select a playlist to see its stats and track list.</div>
     </div>
   </div>
 </main>

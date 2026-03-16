@@ -21,6 +21,7 @@ async function analyzePlaylist(id) {
   const card = document.querySelector(`#analyzer-playlists .playlist-card[onclick*="${id}"]`);
   if (card) card.classList.add('selected');
 
+  document.getElementById('analyzer-empty').style.display = 'none';
   const res = document.getElementById('analyzer-result');
   res.style.display = '';
   document.getElementById('analyzer-tracks').innerHTML = '<div class="spinner"></div>';
