@@ -689,14 +689,45 @@ let pendingAddTrack = null;
 let genreCache = {};
 let analyzedPlaylistId = null;
 
+// ── PKCE HELPERS ──
+function generateCodeVerifier() {
+  const array = new Uint8Array(64);
+  crypto.getRandomValues(array);
+  return btoa(String.fromCharCode(...array))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function generateCodeChallenge(verifier) {
+  const data = new TextEncoder().encode(verifier);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
 // ── INIT ──
-(function init() {
-  const hash = window.location.hash.substring(1);
-  const params = new URLSearchParams(hash);
-  if (params.get('access_token')) {
-    accessToken = params.get('access_token');
-    sessionStorage.setItem('mb_token', accessToken);
+(async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (code) {
+    const verifier = sessionStorage.getItem('mb_pkce_verifier');
     history.replaceState(null, '', window.location.pathname);
+    const body = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: REDIRECT_URI,
+      client_id: CLIENT_ID,
+      code_verifier: verifier
+    });
+    const r = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    });
+    const data = await r.json();
+    if (data.access_token) {
+      accessToken = data.access_token;
+      sessionStorage.setItem('mb_token', accessToken);
+    }
   } else {
     accessToken = sessionStorage.getItem('mb_token');
   }
@@ -713,18 +744,23 @@ function startLogin() {
   doLogin();
 }
 
-function doLogin() {
+async function doLogin() {
   const inp = document.getElementById('client-id-input');
   if (inp && inp.value.trim()) {
     CLIENT_ID = inp.value.trim();
     localStorage.setItem('mb_client_id', CLIENT_ID);
   }
   if (!CLIENT_ID) { showToast('Please enter your Client ID', 'err'); return; }
+  const verifier = generateCodeVerifier();
+  const challenge = await generateCodeChallenge(verifier);
+  sessionStorage.setItem('mb_pkce_verifier', verifier);
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
-    response_type: 'token',
+    response_type: 'code',
     redirect_uri: REDIRECT_URI,
     scope: SCOPES,
+    code_challenge_method: 'S256',
+    code_challenge: challenge,
     show_dialog: 'false'
   });
   window.location = 'https://accounts.spotify.com/authorize?' + params;
