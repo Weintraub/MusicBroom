@@ -110,7 +110,10 @@ function renderSorterPagination(filteredCount, totalPages) {
   if (filteredCount === 0) { el.innerHTML = ''; return; }
   const hasPrev = sorterPage > 0;
   const hasNext = sorterPage < totalPages - 1 || sorterOffset < sorterTotal;
-  const pageLabel = `Page ${sorterPage + 1} of ${totalPages}${sorterOffset < sorterTotal ? '+' : ''}`;
+  const isFiltered = document.getElementById('sorter-search').value || document.getElementById('sorter-genre-filter').value;
+  const knownTotalPages = !isFiltered ? Math.ceil(sorterTotal / SORTER_PAGE_SIZE) : totalPages;
+  const uncertain = isFiltered && sorterOffset < sorterTotal;
+  const pageLabel = `Page ${sorterPage + 1} of ${knownTotalPages}${uncertain ? '+' : ''}`;
   el.innerHTML = `
     <button class="btn-ghost" onclick="prevSorterPage()" ${hasPrev ? '' : 'disabled'}>← Prev</button>
     <span class="pagination-label">${pageLabel}</span>
