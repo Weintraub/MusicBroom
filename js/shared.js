@@ -1,3 +1,7 @@
+// ── VERSION ──
+const VERSION = 'v1.1.2';
+document.querySelector('.version-badge').textContent = VERSION;
+
 // ── CONFIG & SHARED STATE ──
 const SCOPES = [
   'user-read-private','user-read-email',
