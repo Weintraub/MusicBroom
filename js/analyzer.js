@@ -15,8 +15,6 @@ function renderAnalyzerPlaylists() {
 }
 
 async function analyzePlaylist(id) {
-  if (analyzedPlaylistId === id) return;
-  analyzedPlaylistId = id;
   document.querySelectorAll('#analyzer-playlists .playlist-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('analyzer-result').style.display = 'none';
 
@@ -53,6 +51,7 @@ document.getElementById('analyzer-stats').innerHTML = '';
     <div class="stat-card"><div class="stat-label">Avg Track Length</div><div class="stat-val">${msToMin(tracks.length ? totalMs/tracks.length : 0)}</div></div>
   `;
 
+  analyzedPlaylistId = id;
   renderAnalyzerTracks(tracks);
 }
 
