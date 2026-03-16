@@ -77,24 +77,50 @@ nav {
   gap: 10px;
   font-size: 13px;
   color: var(--text2);
-}
-.logout-btn {
-  background: none;
-  border: 1px solid var(--bg4);
-  color: var(--text2);
-  border-radius: 6px;
-  padding: 2px 7px;
-  font-size: 13px;
+  position: relative;
   cursor: pointer;
-  line-height: 1.4;
+  padding: 4px 8px;
+  border-radius: 8px;
+  user-select: none;
 }
-.logout-btn:hover { background: var(--bg4); color: var(--text1); }
+#user-pill:hover { background: var(--bg3); }
 #user-avatar {
   width: 30px; height: 30px; border-radius: 50%;
   background: var(--bg4);
   object-fit: cover;
   display: none;
 }
+#user-pill-chevron {
+  font-size: 10px;
+  opacity: 0.5;
+  transition: transform 0.15s;
+}
+#user-pill.open #user-pill-chevron { transform: rotate(180deg); }
+#user-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg2);
+  border: 1px solid var(--bg4);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  min-width: 140px;
+  z-index: 100;
+  overflow: hidden;
+}
+#user-pill.open #user-dropdown { display: block; }
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.user-dropdown-item:hover { background: var(--bg3); color: var(--text1); }
 
 /* ── MAIN ── */
 main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }

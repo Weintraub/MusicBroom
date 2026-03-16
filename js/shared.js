@@ -1,5 +1,5 @@
 // ── VERSION ──
-const VERSION = 'v1.1.3';
+const VERSION = 'v1.1.4';
 document.querySelector('.version-badge').textContent = VERSION;
 
 // ── CONFIG & SHARED STATE ──
@@ -111,6 +111,20 @@ async function initApp() {
 function logout() {
   sessionStorage.removeItem('mb_token');
   location.href = 'index.html';
+}
+
+function toggleUserDropdown(e) {
+  const pill = document.getElementById('user-pill');
+  pill.classList.toggle('open');
+  if (pill.classList.contains('open')) {
+    const close = (ev) => {
+      if (!pill.contains(ev.target)) {
+        pill.classList.remove('open');
+        document.removeEventListener('click', close);
+      }
+    };
+    document.addEventListener('click', close);
+  }
 }
 
 // ── UTILS ──
