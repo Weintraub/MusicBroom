@@ -54,33 +54,10 @@ async function analyzePlaylist(id) {
     <div class="stat-card"><div class="stat-label">Avg Track Length</div><div class="stat-val">${msToMin(tracks.length ? totalMs/tracks.length : 0)}</div></div>
   `;
 
-  // Render table first (no genres yet)
-  renderAnalyzerTracks(tracks, {});
-
-  // Fetch genres in batches (5 at a time)
-  const genreMap = {};
-  for (let i = 0; i < tracks.length; i += 5) {
-    const batch = tracks.slice(i, i+5);
-    await Promise.all(batch.map(async t => {
-      const g = await getGenreForTrack(t);
-      if (g) {
-        genreMap[t.id] = g;
-        genreMap['_counts'] = genreMap['_counts'] || {};
-        genreMap['_counts'][g] = (genreMap['_counts'][g] || 0) + 1;
-      }
-    }));
-    renderAnalyzerTracks(tracks, genreMap);
-    renderGenreBars(genreMap['_counts'] || {}, tracks.length);
-  }
-
-  // Update stats with genre count
-  const uniqueGenres = Object.keys(genreMap['_counts'] || {}).length;
-  document.getElementById('analyzer-stats').innerHTML += `
-    <div class="stat-card"><div class="stat-label">Unique Genres</div><div class="stat-val">${uniqueGenres}</div></div>
-  `;
+  renderAnalyzerTracks(tracks);
 }
 
-function renderAnalyzerTracks(tracks, genreMap) {
+function renderAnalyzerTracks(tracks) {
   document.getElementById('analyzer-tracks').innerHTML = tracks.map((t, i) => `
     <div class="track-row">
       <div class="col-num">${i+1}</div>
@@ -89,20 +66,7 @@ function renderAnalyzerTracks(tracks, genreMap) {
         <div class="track-name">${esc(t.name)}</div>
         <div class="track-artist">${esc(t.artists.map(a=>a.name).join(', '))}</div>
       </div>
-      <div style="width:120px;"><span class="genre-pill ${genreMap[t.id] ? 'has-genre' : ''}">${genreMap[t.id] ? esc(genreMap[t.id]) : '—'}</span></div>
       <div class="col-dur">${msToMin(t.duration_ms)}</div>
-    </div>
-  `).join('');
-}
-
-function renderGenreBars(counts, total) {
-  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  const max = sorted[0] ? sorted[0][1] : 1;
-  document.getElementById('genre-bars').innerHTML = sorted.map(([g,n]) => `
-    <div class="genre-bar-row">
-      <div class="genre-label">${esc(g)}</div>
-      <div class="genre-bar-bg"><div class="genre-bar-fill" style="width:${Math.round(n/max*100)}%"></div></div>
-      <div class="genre-pct">${Math.round(n/total*100)}%</div>
     </div>
   `).join('');
 }

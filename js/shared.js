@@ -1,5 +1,5 @@
 // ── VERSION ──
-const VERSION = 'v1.1.7';
+const VERSION = 'v1.2.0';
 document.querySelector('.version-badge').textContent = VERSION;
 
 // ── CONFIG & SHARED STATE ──
@@ -17,7 +17,6 @@ let playlistFilter = 'all'; // 'all' | 'mine'
 let playlistSort = 'default'; // 'default' | 'tracks-asc' | 'tracks-desc'
 let playlistHidePrivate = false;
 let allPlaylists = [];
-let genreCache = {};
 
 // ── API ──
 async function api(path, method='GET', body=null) {
@@ -26,7 +25,12 @@ async function api(path, method='GET', body=null) {
     method
   };
   if (body) opts.body = JSON.stringify(body);
-  const r = await fetch('https://api.spotify.com/v1' + path, opts);
+  let r = await fetch('https://api.spotify.com/v1' + path, opts);
+  if (r.status === 429) {
+    const wait = (parseInt(r.headers.get('Retry-After') || '2', 10) + 1) * 1000;
+    await new Promise(res => setTimeout(res, wait));
+    r = await fetch('https://api.spotify.com/v1' + path, opts);
+  }
   if (r.status === 401) { sessionStorage.removeItem('mb_token'); location.href = 'index.html'; }
   if (r.status === 204) return null;
   if (!r.ok) { const err = await r.json().catch(() => ({})); throw Object.assign(new Error(err?.error?.message || r.statusText), { status: r.status }); }
@@ -35,19 +39,6 @@ async function api(path, method='GET', body=null) {
 
 async function getAllPlaylistTracks(playlistId, limit=100, offset=0) {
   return api(`/playlists/${playlistId}/items?limit=${limit}&offset=${offset}&fields=total,next,items(item(id,name,duration_ms,artists(id,name),album(images)))`);
-}
-
-// ── GENRE (via artist) ──
-async function getGenreForTrack(track) {
-  if (!track || !track.artists || !track.artists[0]) return null;
-  const artistId = track.artists[0].id;
-  if (genreCache[artistId] !== undefined) return genreCache[artistId];
-  try {
-    const a = await api(`/artists/${artistId}`);
-    const genre = (a.genres && a.genres[0]) ? a.genres[0] : null;
-    genreCache[artistId] = genre;
-    return genre;
-  } catch { return null; }
 }
 
 // ── PLAYLIST FILTER / SORT ──
