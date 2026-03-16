@@ -439,6 +439,28 @@
     transition: all 0.15s;
   }
   .btn-ghost:hover { border-color: var(--border-bright); color: var(--text); }
+  .btn-ghost.active { border-color: var(--green); color: var(--green); background: var(--green-muted); }
+  .playlist-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .playlist-controls select {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text2);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 8px 14px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .playlist-controls select:focus { border-color: var(--green); }
 
   /* ── LOADING / EMPTY ── */
   .spinner {
@@ -585,7 +607,7 @@
   <nav>
     <div style="display:flex;align-items:flex-end;">
       <div class="logo">Music<span>Broom</span></div>
-      <span class="version-badge">v1.0.0</span>
+      <span class="version-badge">v1.1.0</span>
     </div>
     <div class="nav-tabs">
       <button class="tab-btn active" onclick="switchTab('analyzer')">Analyzer</button>
@@ -605,6 +627,14 @@
       </div>
       <p style="color:var(--text2);margin-bottom:20px;font-size:13px;">Pick a playlist to see its genre breakdown and track list.</p>
 
+      <div class="playlist-controls">
+        <button class="btn-ghost pl-filter-mine" onclick="setPlaylistFilter(playlistFilter === 'mine' ? 'all' : 'mine')">My playlists</button>
+        <select class="pl-sort-select" onchange="setPlaylistSort(this.value)">
+          <option value="default">Default order</option>
+          <option value="tracks-desc">Most tracks first</option>
+          <option value="tracks-asc">Fewest tracks first</option>
+        </select>
+      </div>
       <div id="analyzer-playlists" class="playlist-grid">
         <div class="spinner"></div>
       </div>
@@ -638,6 +668,14 @@
 
       <div style="margin-bottom:24px;">
         <p style="font-size:12px;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">Master playlist</p>
+        <div class="playlist-controls">
+          <button class="btn-ghost pl-filter-mine" onclick="setPlaylistFilter(playlistFilter === 'mine' ? 'all' : 'mine')">My playlists</button>
+          <select class="pl-sort-select" onchange="setPlaylistSort(this.value)">
+            <option value="default">Default order</option>
+            <option value="tracks-desc">Most tracks first</option>
+            <option value="tracks-asc">Fewest tracks first</option>
+          </select>
+        </div>
         <div id="sorter-playlists" class="playlist-grid">
           <div class="spinner"></div>
         </div>
@@ -691,6 +729,9 @@ const SCOPES = [
 let CLIENT_ID = localStorage.getItem('mb_client_id') || '';
 let REDIRECT_URI = window.location.href.split('#')[0].split('?')[0];
 let accessToken = null;
+let currentUserId = null;
+let playlistFilter = 'all'; // 'all' | 'mine'
+let playlistSort = 'default'; // 'default' | 'tracks-asc' | 'tracks-desc'
 let allPlaylists = [];
 let sorterTracks = [];
 let sorterOffset = 0;
@@ -781,6 +822,7 @@ async function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = '';
   const me = await api('/me');
+  currentUserId = me.id;
   document.getElementById('user-name').textContent = me.display_name || me.id;
   if (me.images && me.images[0]) {
     const av = document.getElementById('user-avatar');
@@ -821,6 +863,34 @@ async function getGenreForTrack(track) {
   } catch { return null; }
 }
 
+// ── PLAYLIST FILTER / SORT ──
+function getFilteredSortedPlaylists() {
+  let list = allPlaylists;
+  if (playlistFilter === 'mine') {
+    list = list.filter(p => p.owner && p.owner.id === currentUserId);
+  }
+  if (playlistSort === 'tracks-asc') {
+    list = list.slice().sort((a, b) => (a.tracks || a.items || {}).total - (b.tracks || b.items || {}).total);
+  } else if (playlistSort === 'tracks-desc') {
+    list = list.slice().sort((a, b) => (b.tracks || b.items || {}).total - (a.tracks || a.items || {}).total);
+  }
+  return list;
+}
+
+function setPlaylistFilter(val) {
+  playlistFilter = val;
+  document.querySelectorAll('.pl-filter-mine').forEach(btn => btn.classList.toggle('active', val === 'mine'));
+  renderAnalyzerPlaylists();
+  renderSorterPlaylists();
+}
+
+function setPlaylistSort(val) {
+  playlistSort = val;
+  document.querySelectorAll('.pl-sort-select').forEach(sel => sel.value = val);
+  renderAnalyzerPlaylists();
+  renderSorterPlaylists();
+}
+
 // ── LOAD PLAYLISTS ──
 async function loadPlaylists() {
   let items = [];
@@ -839,7 +909,10 @@ async function loadPlaylists() {
 
 function renderAnalyzerPlaylists() {
   const el = document.getElementById('analyzer-playlists');
-  el.innerHTML = allPlaylists.map(p => `
+  const list = getFilteredSortedPlaylists();
+  el.innerHTML = list.length === 0
+    ? '<div class="empty-msg">No playlists found.</div>'
+    : list.map(p => `
     <div class="playlist-card" onclick="analyzePlaylist('${p.id}')">
       <img class="playlist-img" src="${p.images && p.images[0] ? p.images[0].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
       <div class="playlist-name">${esc(p.name)}</div>
@@ -850,7 +923,10 @@ function renderAnalyzerPlaylists() {
 
 function renderSorterPlaylists() {
   const el = document.getElementById('sorter-playlists');
-  el.innerHTML = allPlaylists.map(p => `
+  const list = getFilteredSortedPlaylists();
+  el.innerHTML = list.length === 0
+    ? '<div class="empty-msg">No playlists found.</div>'
+    : list.map(p => `
     <div class="playlist-card" id="sp-${p.id}" onclick="selectMasterPlaylist('${p.id}')">
       <img class="playlist-img" src="${p.images && p.images[0] ? p.images[0].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
       <div class="playlist-name">${esc(p.name)}</div>
