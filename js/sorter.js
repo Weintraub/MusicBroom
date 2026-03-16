@@ -116,7 +116,7 @@ async function addTrackToPlaylist(playlistId, playlistName) {
   if (!trackId) return;
   const trackUri = `spotify:track:${trackId}`;
   try {
-    const r = await api(`/playlists/${playlistId}/tracks`, 'POST', { uris: [trackUri] });
+    const r = await api(`/playlists/${playlistId}/items`, 'POST', { uris: [trackUri] });
     if (r && r.snapshot_id) {
       showToast(`Added to "${playlistName}"`, 'ok');
       const btn = document.getElementById('add-' + trackId);
