@@ -33,7 +33,7 @@ async function selectMasterPlaylist(id) {
 async function loadSorterBatch() {
   const r = await getAllPlaylistTracks(sorterPlaylistId, 50, sorterOffset);
   sorterTotal = r.total;
-  const newTracks = r.items.filter(i => i.track && i.track.id).map(i => i.track);
+  const newTracks = r.items.filter(i => (i.item || i.track) && (i.item || i.track).id).map(i => i.item || i.track);
   sorterTracks = sorterTracks.concat(newTracks);
   sorterOffset += newTracks.length;
 

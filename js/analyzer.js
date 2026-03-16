@@ -35,7 +35,7 @@ async function analyzePlaylist(id) {
   try {
     while (tracks.length < 200) {
       const r = await getAllPlaylistTracks(id, 100, offset);
-      const valid = (r.items || []).filter(i => i.track && i.track.id).map(i => i.track);
+      const valid = (r.items || []).filter(i => (i.item || i.track) && (i.item || i.track).id).map(i => i.item || i.track);
       tracks = tracks.concat(valid);
       if (!r.next || valid.length < 100) break;
       offset += 100;

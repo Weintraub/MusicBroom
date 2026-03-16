@@ -1,5 +1,5 @@
 // ── VERSION ──
-const VERSION = 'v1.1.6';
+const VERSION = 'v1.1.7';
 document.querySelector('.version-badge').textContent = VERSION;
 
 // ── CONFIG & SHARED STATE ──
@@ -34,7 +34,7 @@ async function api(path, method='GET', body=null) {
 }
 
 async function getAllPlaylistTracks(playlistId, limit=100, offset=0) {
-  return api(`/playlists/${playlistId}/tracks?limit=${limit}&offset=${offset}&fields=total,next,items(track(id,name,duration_ms,artists,album(images)))`);
+  return api(`/playlists/${playlistId}/items?limit=${limit}&offset=${offset}&fields=total,next,items(item(id,name,duration_ms,artists(id,name),album(images)))`);
 }
 
 // ── GENRE (via artist) ──
