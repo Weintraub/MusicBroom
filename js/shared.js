@@ -44,9 +44,10 @@ async function getAllPlaylistTracks(playlistId, limit=100, offset=0) {
 // Tags to skip — personal markers, not genres
 const _skipTags = new Set(['seen live','favourites','favorites','love','awesome','amazing','beautiful','indie','all','music','mellow','chill']);
 
+const LASTFM_KEY = '559abd2a57b15032ded9dc936ed75816';
+
 const _artistGenreCache = {};
 async function getGenreForTrack(track) {
-  const LASTFM_KEY = localStorage.getItem('mb_lastfm_key');
   if (!LASTFM_KEY || !track.artists || !track.artists.length) return null;
   const artistName = track.artists[0].name;
   if (!artistName) return null;
