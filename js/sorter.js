@@ -10,7 +10,7 @@ function renderSorterPlaylists() {
   el.innerHTML = list.length === 0
     ? '<div class="empty-msg">No playlists found.</div>'
     : list.map(p => `
-    <div class="playlist-card" id="sp-${p.id}" onclick="selectMasterPlaylist('${p.id}')">
+    <div class="playlist-card${p.id === sorterPlaylistId ? ' selected' : ''}" id="sp-${p.id}" onclick="selectMasterPlaylist('${p.id}')">
       <img class="playlist-img" src="${p.images && p.images[0] ? p.images[0].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
       <div class="playlist-name">${esc(p.name)}</div>
       <div class="playlist-meta">${(p.tracks || p.items || {}).total} tracks</div>
@@ -18,10 +18,25 @@ function renderSorterPlaylists() {
   `).join('');
 }
 
+function openPlaylistModal() {
+  renderSorterPlaylists();
+  document.getElementById('playlist-modal').classList.add('open');
+}
+
+function closePlaylistModal() {
+  document.getElementById('playlist-modal').classList.remove('open');
+}
+
 async function selectMasterPlaylist(id) {
   document.querySelectorAll('#sorter-playlists .playlist-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('sp-' + id).classList.add('selected');
   sorterPlaylistId = id;
+  closePlaylistModal();
+  const pl = allPlaylists.find(p => p.id === id);
+  if (pl) {
+    document.getElementById('choose-playlist-btn').textContent = 'Change playlist';
+    document.getElementById('selected-playlist-name').textContent = pl.name;
+  }
   sorterTracks = [];
   sorterOffset = 0;
   document.getElementById('sorter-tracks-wrap').style.display = '';
