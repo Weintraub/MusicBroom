@@ -1,5 +1,5 @@
 // ── VERSION ──
-const VERSION = 'v1.4.3';
+const VERSION = 'v1.4.4';
 document.querySelector('.version-badge').textContent = VERSION;
 
 // ── CONFIG & SHARED STATE ──
@@ -46,21 +46,23 @@ const _skipTags = new Set(['seen live','favourites','favorites','love','awesome'
 
 const LASTFM_KEY = '559abd2a57b15032ded9dc936ed75816';
 
-const _artistGenreCache = {};
+const _trackGenreCache = {};
 async function getGenreForTrack(track) {
   if (!LASTFM_KEY || !track.artists || !track.artists.length) return null;
   const artistName = track.artists[0].name;
-  if (!artistName) return null;
-  if (!(artistName in _artistGenreCache)) {
-    const url = `https://ws.audioscrobbler.com/2.0/?method=artist.getTopTags&artist=${encodeURIComponent(artistName)}&api_key=${LASTFM_KEY}&format=json`;
+  const trackName = track.name;
+  if (!artistName || !trackName) return null;
+  const cacheKey = `${artistName}\0${trackName}`;
+  if (!(cacheKey in _trackGenreCache)) {
+    const url = `https://ws.audioscrobbler.com/2.0/?method=track.getTopTags&artist=${encodeURIComponent(artistName)}&track=${encodeURIComponent(trackName)}&api_key=${LASTFM_KEY}&format=json`;
     const r = await fetch(url).then(res => res.json()).catch(() => null);
     const tags = r && r.toptags && r.toptags.tag;
     const genre = Array.isArray(tags)
       ? (tags.find(t => !_skipTags.has(t.name.toLowerCase())) || {}).name || null
       : null;
-    _artistGenreCache[artistName] = genre;
+    _trackGenreCache[cacheKey] = genre;
   }
-  return _artistGenreCache[artistName];
+  return _trackGenreCache[cacheKey];
 }
 
 // ── PLAYLIST FILTER / SORT ──
