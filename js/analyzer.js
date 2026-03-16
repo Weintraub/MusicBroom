@@ -6,7 +6,7 @@ function renderAnalyzerPlaylists() {
   el.innerHTML = list.length === 0
     ? '<div class="empty-msg">No playlists found.</div>'
     : list.map(p => `
-    <div class="playlist-card" onclick="analyzePlaylist('${p.id}')">
+    <div class="playlist-card${p.id === analyzedPlaylistId ? ' selected' : ''}" id="ap-${p.id}" onclick="analyzePlaylist('${p.id}')">
       <img class="playlist-img" src="${p.images && p.images[0] ? p.images[0].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
       <div class="playlist-name">${esc(p.name)}</div>
       <div class="playlist-meta">${(p.tracks || p.items || {}).total} tracks</div>
@@ -14,18 +14,28 @@ function renderAnalyzerPlaylists() {
   `).join('');
 }
 
-async function analyzePlaylist(id) {
-  document.querySelectorAll('#analyzer-playlists .playlist-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('analyzer-result').style.display = 'none';
+function openAnalyzerPlaylistModal() {
+  renderAnalyzerPlaylists();
+  document.getElementById('analyzer-playlist-modal').classList.add('open');
+}
 
-  const card = document.querySelector(`#analyzer-playlists .playlist-card[onclick*="${id}"]`);
-  if (card) card.classList.add('selected');
+function closeAnalyzerPlaylistModal() {
+  document.getElementById('analyzer-playlist-modal').classList.remove('open');
+}
+
+async function analyzePlaylist(id) {
+  closeAnalyzerPlaylistModal();
+  const pl = allPlaylists.find(p => p.id === id);
+  if (pl) {
+    document.getElementById('choose-analyzer-playlist-btn').textContent = 'Change playlist';
+    document.getElementById('selected-analyzer-playlist-name').textContent = pl.name;
+  }
 
   document.getElementById('analyzer-empty').style.display = 'none';
   const res = document.getElementById('analyzer-result');
   res.style.display = '';
   document.getElementById('analyzer-tracks').innerHTML = '<div class="spinner"></div>';
-document.getElementById('analyzer-stats').innerHTML = '';
+  document.getElementById('analyzer-stats').innerHTML = '';
 
   // Fetch tracks (up to 200 for speed)
   let tracks = [];

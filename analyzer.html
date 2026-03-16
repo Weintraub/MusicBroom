@@ -34,38 +34,48 @@
     <h2>Playlist Analyzer</h2>
   </div>
 
-  <div class="analyzer-layout">
-    <div class="analyzer-sidebar">
-      <div class="playlist-controls">
-        <button class="btn-ghost pl-filter-mine" onclick="setPlaylistFilter(playlistFilter === 'mine' ? 'all' : 'mine')">My playlists</button>
-        <button class="btn-ghost pl-filter-public" onclick="setPlaylistHidePrivate(!playlistHidePrivate)">Public only</button>
-        <select class="pl-sort-select" onchange="setPlaylistSort(this.value)">
-          <option value="default">Default order</option>
-          <option value="tracks-desc">Most tracks first</option>
-          <option value="tracks-asc">Fewest tracks first</option>
-        </select>
-      </div>
-      <div id="analyzer-playlists" class="playlist-grid">
-        <div class="spinner"></div>
-      </div>
-    </div>
+  <div style="margin-bottom:24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+    <p style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin:0;">Playlist</p>
+    <button class="btn-ghost" id="choose-analyzer-playlist-btn" onclick="openAnalyzerPlaylistModal()">Choose playlist</button>
+    <span id="selected-analyzer-playlist-name" style="font-size:13px;color:var(--text2);"></span>
+  </div>
 
-    <div class="analyzer-content">
-      <div id="analyzer-result" style="display:none;">
-        <div class="stats-grid" id="analyzer-stats"></div>
-        <div class="track-table-wrap">
-          <div class="track-table-head">
-            <div class="col-num">#</div>
-            <div style="flex:1;">Track</div>
-            <div class="col-dur">Time</div>
-          </div>
-          <div id="analyzer-tracks"></div>
-        </div>
+  <div id="analyzer-result" style="display:none;">
+    <div class="stats-grid" id="analyzer-stats"></div>
+    <div class="track-table-wrap">
+      <div class="track-table-head">
+        <div class="col-num">#</div>
+        <div style="flex:1;">Track</div>
+        <div class="col-dur">Time</div>
       </div>
-      <div id="analyzer-empty" style="color:var(--text3);font-size:13px;padding-top:40px;">Select a playlist to see its stats and track list.</div>
+      <div id="analyzer-tracks"></div>
     </div>
   </div>
+  <div id="analyzer-empty" style="color:var(--text3);font-size:13px;padding-top:40px;">Select a playlist to see its stats and track list.</div>
 </main>
+
+<!-- ANALYZER PLAYLIST PICKER MODAL -->
+<div class="modal-backdrop" id="analyzer-playlist-modal" onclick="closeAnalyzerPlaylistModal()">
+  <div class="modal modal-wide" onclick="event.stopPropagation()">
+    <h3>Choose playlist</h3>
+    <p>Select a playlist to analyze.</p>
+    <div class="playlist-controls" style="margin-bottom:16px;">
+      <button class="btn-ghost pl-filter-mine" onclick="setPlaylistFilter(playlistFilter === 'mine' ? 'all' : 'mine')">My playlists</button>
+      <button class="btn-ghost pl-filter-public" onclick="setPlaylistHidePrivate(!playlistHidePrivate)">Public only</button>
+      <select class="pl-sort-select" onchange="setPlaylistSort(this.value)">
+        <option value="default">Default order</option>
+        <option value="tracks-desc">Most tracks first</option>
+        <option value="tracks-asc">Fewest tracks first</option>
+      </select>
+    </div>
+    <div id="analyzer-playlists" class="playlist-grid modal-playlist-grid">
+      <div class="spinner"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeAnalyzerPlaylistModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
