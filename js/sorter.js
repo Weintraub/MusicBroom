@@ -91,7 +91,7 @@ function renderSorterTracks() {
         <div class="track-name">${esc(t.name)}</div>
         <div class="track-artist">${esc(t.artists.map(a=>a.name).join(', '))}</div>
       </div>
-      <div style="width:130px;">${t._genres && t._genres.length ? t._genres.map(g=>`<span class="genre-pill has-genre">${esc(g)}</span>`).join(' ') : '<span class="genre-pill">—</span>'}</div>
+      <div style="width:220px;display:flex;flex-wrap:wrap;gap:4px;">${t._genres && t._genres.length ? t._genres.map(g=>`<span class="genre-pill has-genre">${esc(g)}</span>`).join('') : '<span class="genre-pill">—</span>'}</div>
       <div style="width:160px;">
         <button class="add-btn" id="add-${esc(t.id)}" onclick="openAddModal('${esc(t.id)}','${esc(t.name)}')">+ Add to playlist</button>
       </div>
