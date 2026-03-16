@@ -28,7 +28,9 @@ async function analyzePlaylist(id) {
   const pl = allPlaylists.find(p => p.id === id);
   if (pl) {
     document.getElementById('choose-analyzer-playlist-btn').textContent = 'Change playlist';
-    document.getElementById('selected-analyzer-playlist-name').textContent = pl.name;
+    const nameEl = document.getElementById('selected-analyzer-playlist-name');
+    nameEl.textContent = pl.name;
+    nameEl.style.display = '';
   }
 
   const res = document.getElementById('analyzer-result');

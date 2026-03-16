@@ -37,7 +37,9 @@ async function selectMasterPlaylist(id) {
   const pl = allPlaylists.find(p => p.id === id);
   if (pl) {
     document.getElementById('choose-playlist-btn').textContent = 'Change playlist';
-    document.getElementById('selected-playlist-name').textContent = pl.name;
+    const nameEl = document.getElementById('selected-playlist-name');
+    nameEl.textContent = pl.name;
+    nameEl.style.display = '';
   }
   sorterTracks = [];
   sorterOffset = 0;
