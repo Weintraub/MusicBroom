@@ -78,6 +78,17 @@ nav {
   font-size: 13px;
   color: var(--text2);
 }
+.logout-btn {
+  background: none;
+  border: 1px solid var(--bg4);
+  color: var(--text2);
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.logout-btn:hover { background: var(--bg4); color: var(--text1); }
 #user-avatar {
   width: 30px; height: 30px; border-radius: 50%;
   background: var(--bg4);

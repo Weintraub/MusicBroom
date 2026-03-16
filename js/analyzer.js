@@ -32,12 +32,18 @@ async function analyzePlaylist(id) {
   // Fetch tracks (up to 200 for speed)
   let tracks = [];
   let offset = 0;
-  while (tracks.length < 200) {
-    const r = await getAllPlaylistTracks(id, 100, offset);
-    const valid = r.items.filter(i => i.track && i.track.id).map(i => i.track);
-    tracks = tracks.concat(valid);
-    if (!r.next || valid.length < 100) break;
-    offset += 100;
+  try {
+    while (tracks.length < 200) {
+      const r = await getAllPlaylistTracks(id, 100, offset);
+      const valid = (r.items || []).filter(i => i.track && i.track.id).map(i => i.track);
+      tracks = tracks.concat(valid);
+      if (!r.next || valid.length < 100) break;
+      offset += 100;
+    }
+  } catch (e) {
+    document.getElementById('analyzer-tracks').innerHTML = `<div class="empty-msg">Failed to load tracks: ${esc(e.message)}${e.status === 403 ? ' — try re-authenticating.' : ''}</div>`;
+    analyzedPlaylistId = null;
+    return;
   }
 
   // Stats

@@ -28,6 +28,7 @@ async function api(path, method='GET', body=null) {
   const r = await fetch('https://api.spotify.com/v1' + path, opts);
   if (r.status === 401) { sessionStorage.removeItem('mb_token'); location.href = 'index.html'; }
   if (r.status === 204) return null;
+  if (!r.ok) { const err = await r.json().catch(() => ({})); throw Object.assign(new Error(err?.error?.message || r.statusText), { status: r.status }); }
   return r.json();
 }
 
@@ -104,6 +105,12 @@ async function initApp() {
     av.style.display = '';
   }
   await loadPlaylists();
+}
+
+// ── AUTH ──
+function logout() {
+  sessionStorage.removeItem('mb_token');
+  location.href = 'index.html';
 }
 
 // ── UTILS ──
