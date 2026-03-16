@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MusicBroom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1DB954;
+    --green-dim: #158a3e;
+    --green-muted: #1db95422;
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #181818;
+    --bg4: #222222;
+    --border: #2a2a2a;
+    --border-bright: #3a3a3a;
+    --text: #f0f0f0;
+    --text2: #a0a0a0;
+    --text3: #606060;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --radius: 8px;
+    --radius-lg: 14px;
+    --radius-pill: 999px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    color: var(--green);
+  }
+  .logo span { color: var(--text); }
+  .nav-tabs { display: flex; gap: 4px; }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 7px 16px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--bg3); }
+  .tab-btn.active { color: var(--green); background: var(--green-muted); }
+  #user-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  #user-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--bg4);
+    object-fit: cover;
+    display: none;
+  }
+
+  /* ── MAIN ── */
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── LOGIN SCREEN ── */
+  #login-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    text-align: center;
+    gap: 24px;
+  }
+  .login-logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 56px;
+    letter-spacing: -2px;
+    color: var(--green);
+  }
+  .login-logo span { color: var(--text); }
+  .login-sub {
+    color: var(--text2);
+    font-size: 15px;
+    max-width: 380px;
+    line-height: 1.7;
+  }
+  .btn-primary {
+    background: var(--green);
+    color: #000;
+    border: none;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 14px 36px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+  .btn-primary:hover { background: #1ed760; transform: scale(1.02); }
+  .btn-primary:active { transform: scale(0.98); }
+  .login-note {
+    font-size: 12px;
+    color: var(--text3);
+    max-width: 340px;
+  }
+
+  /* ── CONFIG BOX ── */
+  .config-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    margin-bottom: 28px;
+  }
+  .config-box h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  .field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .field-row label { font-size: 12px; color: var(--text2); }
+  .field-row input {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 9px 14px;
+    outline: none;
+    transition: border 0.15s;
+  }
+  .field-row input:focus { border-color: var(--green); }
+  .field-note { font-size: 11px; color: var(--text3); }
+
+  /* ── SECTION HEADERS ── */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .section-head h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.3px;
+  }
+
+  /* ── PLAYLIST GRID ── */
+  .playlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .playlist-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .playlist-card:hover { border-color: var(--border-bright); background: var(--bg4); }
+  .playlist-card.selected { border-color: var(--green); background: var(--green-muted); }
+  .playlist-img {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: var(--radius);
+    object-fit: cover;
+    background: var(--bg4);
+    margin-bottom: 10px;
+  }
+  .playlist-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .playlist-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .playlist-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--green);
+    color: #000;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+  }
+
+  /* ── GENRE BREAKDOWN ── */
+  .genre-chart-wrap {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+  .genre-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .genre-label {
+    width: 130px;
+    font-size: 12px;
+    color: var(--text2);
+    text-align: right;
+    flex-shrink: 0;
+    text-transform: capitalize;
+  }
+  .genre-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: var(--bg4);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .genre-bar-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 4px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  .genre-pct {
+    width: 40px;
+    font-size: 12px;
+    color: var(--text3);
+    text-align: right;
+  }
+
+  /* ── TRACK TABLE ── */
+  .track-table-wrap {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .track-table-head {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text3);
+    gap: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .track-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .track-row:last-child { border-bottom: none; }
+  .track-row:hover { background: var(--bg4); }
+  .track-art {
+    width: 38px; height: 38px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: var(--bg4);
+    flex-shrink: 0;
+  }
+  .track-info { flex: 1; min-width: 0; }
+  .track-name {
+    font-size: 13px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .track-artist { font-size: 11px; color: var(--text3); }
+  .genre-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    white-space: nowrap;
+    cursor: default;
+  }
+  .genre-pill.has-genre {
+    background: var(--green-muted);
+    border-color: #1db95455;
+    color: var(--green);
+  }
+  .add-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .add-btn:hover { border-color: var(--green); color: var(--green); }
+  .add-btn.done { border-color: #2a4a2a; color: #2a8a2a; cursor: default; }
+  .col-num { width: 28px; text-align: right; color: var(--text3); font-size: 12px; flex-shrink: 0; }
+  .col-dur { width: 52px; text-align: right; color: var(--text3); font-size: 12px; flex-shrink: 0; }
+
+  /* ── MODAL ── */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    display: none;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    min-width: 340px;
+    max-width: 480px;
+    width: 90vw;
+  }
+  .modal h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 17px;
+    margin-bottom: 6px;
+  }
+  .modal p { font-size: 13px; color: var(--text2); margin-bottom: 18px; }
+  .playlist-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .picker-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.1s;
+    border: 1px solid transparent;
+  }
+  .picker-row:hover { background: var(--bg3); border-color: var(--border); }
+  .picker-img {
+    width: 36px; height: 36px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: var(--bg4);
+    flex-shrink: 0;
+  }
+  .picker-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    flex: 1;
+  }
+  .picker-meta { font-size: 11px; color: var(--text3); }
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .btn-ghost {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 8px 18px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-ghost:hover { border-color: var(--border-bright); color: var(--text); }
+
+  /* ── LOADING / EMPTY ── */
+  .spinner {
+    width: 24px; height: 24px;
+    border: 2px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 40px auto;
+    display: block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty-msg {
+    text-align: center;
+    color: var(--text3);
+    padding: 48px;
+    font-size: 13px;
+  }
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--bg3);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius);
+    padding: 12px 20px;
+    font-size: 13px;
+    color: var(--text);
+    z-index: 9999;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.2s;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.ok { border-color: var(--green); color: var(--green); }
+  .toast.err { border-color: #c0392b; color: #e74c3c; }
+
+  /* ── STATS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+  }
+  .stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .stat-val { font-family: var(--font-display); font-weight: 700; font-size: 28px; color: var(--text); }
+  .stat-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .filter-bar input {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 8px 14px;
+    outline: none;
+    flex: 1;
+    min-width: 200px;
+    transition: border 0.15s;
+  }
+  .filter-bar input:focus { border-color: var(--green); }
+  .filter-bar select {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text2);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 8px 14px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .load-more-btn {
+    width: 100%;
+    margin-top: 14px;
+    padding: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .load-more-btn:hover { border-color: var(--border-bright); color: var(--text); }
+
+  /* ── ANALYZE BUTTON ── */
+  .analyze-btn {
+    background: var(--green-muted);
+    border: 1px solid #1db95455;
+    color: var(--green);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 8px 18px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .analyze-btn:hover { background: var(--green); color: #000; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-logo">Music<span>Broom</span></div>
+  <p class="login-sub">Genre analytics, playlist insights, and a smart sorter for your uncategorized tracks.</p>
+  <button class="btn-primary" onclick="startLogin()">Connect with Spotify</button>
+  <p class="login-note">You'll be redirected to Spotify to authorize. We never store your data — everything runs in your browser.</p>
+  <div id="config-wrap" style="width:100%;max-width:460px;margin-top:8px;display:none;">
+    <div class="config-box">
+      <h3>Setup — Spotify App Credentials</h3>
+      <div class="field-row">
+        <label>Client ID</label>
+        <input type="text" id="client-id-input" placeholder="e.g. 4b3c1d2e..." />
+      </div>
+      <p class="field-note" style="margin-top:-6px;">Your Client ID from the <a href="https://developer.spotify.com/dashboard" style="color:var(--green);">Spotify Developer Dashboard</a>. The Redirect URI must be set to this page's URL.</p>
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Authorize</button>
+  </div>
+</div>
+
+<!-- APP SHELL (hidden until authed) -->
+<div id="app" style="display:none;">
+  <nav>
+    <div class="logo">Music<span>Broom</span></div>
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('analyzer')">Analyzer</button>
+      <button class="tab-btn" onclick="switchTab('sorter')">Sorter</button>
+    </div>
+    <div id="user-pill">
+      <img id="user-avatar" alt="avatar">
+      <span id="user-name">–</span>
+    </div>
+  </nav>
+
+  <main>
+    <!-- ANALYZER TAB -->
+    <div id="tab-analyzer" class="tab-panel active">
+      <div class="section-head">
+        <h2>Playlist Analyzer</h2>
+      </div>
+      <p style="color:var(--text2);margin-bottom:20px;font-size:13px;">Pick a playlist to see its genre breakdown and track list.</p>
+
+      <div id="analyzer-playlists" class="playlist-grid">
+        <div class="spinner"></div>
+      </div>
+
+      <div id="analyzer-result" style="display:none;">
+        <div class="stats-grid" id="analyzer-stats"></div>
+        <div class="genre-chart-wrap">
+          <div class="section-head" style="margin-bottom:16px;">
+            <h2 style="font-size:16px;">Genre breakdown</h2>
+          </div>
+          <div id="genre-bars"></div>
+        </div>
+        <div class="track-table-wrap">
+          <div class="track-table-head">
+            <div class="col-num">#</div>
+            <div style="flex:1;">Track</div>
+            <div style="width:120px;">Genre</div>
+            <div class="col-dur">Time</div>
+          </div>
+          <div id="analyzer-tracks"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SORTER TAB -->
+    <div id="tab-sorter" class="tab-panel">
+      <div class="section-head">
+        <h2>Playlist Sorter</h2>
+      </div>
+      <p style="color:var(--text2);margin-bottom:20px;font-size:13px;">Choose your "master" (uncategorized) playlist, then move tracks into your genre playlists.</p>
+
+      <div style="margin-bottom:24px;">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">Master playlist</p>
+        <div id="sorter-playlists" class="playlist-grid">
+          <div class="spinner"></div>
+        </div>
+      </div>
+
+      <div id="sorter-tracks-wrap" style="display:none;">
+        <div class="filter-bar">
+          <input type="text" id="sorter-search" placeholder="Search tracks..." oninput="filterSorterTracks()">
+          <select id="sorter-genre-filter" onchange="filterSorterTracks()">
+            <option value="">All genres</option>
+          </select>
+        </div>
+        <div class="track-table-wrap">
+          <div class="track-table-head">
+            <div class="col-num">#</div>
+            <div style="flex:1;">Track</div>
+            <div style="width:130px;">Genre</div>
+            <div style="width:160px;">Add to playlist</div>
+          </div>
+          <div id="sorter-tracks"></div>
+        </div>
+        <button class="load-more-btn" id="load-more-btn" onclick="loadMoreSorterTracks()" style="display:none;">Load more tracks</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ADD TO PLAYLIST MODAL -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">Add to playlist</h3>
+    <p id="modal-sub">Choose a playlist to add this track to.</p>
+    <div class="playlist-picker" id="modal-picker"></div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG & STATE ──
+const SCOPES = [
+  'user-read-private','user-read-email',
+  'playlist-read-private','playlist-read-collaborative',
+  'playlist-modify-public','playlist-modify-private',
+  'user-top-read','user-read-recently-played'
+].join(' ');
+
+let CLIENT_ID = localStorage.getItem('mb_client_id') || '';
+let REDIRECT_URI = window.location.href.split('#')[0].split('?')[0];
+let accessToken = null;
+let allPlaylists = [];
+let sorterTracks = [];
+let sorterOffset = 0;
+let sorterTotal = 0;
+let sorterPlaylistId = null;
+let pendingAddTrack = null;
+let genreCache = {};
+let analyzedPlaylistId = null;
+
+// ── INIT ──
+(function init() {
+  const hash = window.location.hash.substring(1);
+  const params = new URLSearchParams(hash);
+  if (params.get('access_token')) {
+    accessToken = params.get('access_token');
+    sessionStorage.setItem('mb_token', accessToken);
+    history.replaceState(null, '', window.location.pathname);
+  } else {
+    accessToken = sessionStorage.getItem('mb_token');
+  }
+  if (accessToken) {
+    showApp();
+  }
+})();
+
+function startLogin() {
+  if (!CLIENT_ID) {
+    document.getElementById('config-wrap').style.display = '';
+    return;
+  }
+  doLogin();
+}
+
+function doLogin() {
+  const inp = document.getElementById('client-id-input');
+  if (inp && inp.value.trim()) {
+    CLIENT_ID = inp.value.trim();
+    localStorage.setItem('mb_client_id', CLIENT_ID);
+  }
+  if (!CLIENT_ID) { showToast('Please enter your Client ID', 'err'); return; }
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID,
+    response_type: 'token',
+    redirect_uri: REDIRECT_URI,
+    scope: SCOPES,
+    show_dialog: 'false'
+  });
+  window.location = 'https://accounts.spotify.com/authorize?' + params;
+}
+
+async function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  const me = await api('/me');
+  document.getElementById('user-name').textContent = me.display_name || me.id;
+  if (me.images && me.images[0]) {
+    const av = document.getElementById('user-avatar');
+    av.src = me.images[0].url;
+    av.style.display = '';
+  }
+  await loadPlaylists();
+}
+
+// ── API ──
+async function api(path, method='GET', body=null) {
+  const opts = {
+    headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+    method
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch('https://api.spotify.com/v1' + path, opts);
+  if (r.status === 401) { sessionStorage.removeItem('mb_token'); location.reload(); }
+  if (r.status === 204) return null;
+  return r.json();
+}
+
+async function getAllPlaylistTracks(playlistId, limit=100, offset=0) {
+  const r = await api(`/playlists/${playlistId}/tracks?limit=${limit}&offset=${offset}&fields=total,next,items(track(id,name,duration_ms,artists,album(images)))`);
+  return r;
+}
+
+// ── GENRE (via artist) ──
+async function getGenreForTrack(track) {
+  if (!track || !track.artists || !track.artists[0]) return null;
+  const artistId = track.artists[0].id;
+  if (genreCache[artistId] !== undefined) return genreCache[artistId];
+  try {
+    const a = await api(`/artists/${artistId}`);
+    const genre = (a.genres && a.genres[0]) ? a.genres[0] : null;
+    genreCache[artistId] = genre;
+    return genre;
+  } catch { return null; }
+}
+
+// ── LOAD PLAYLISTS ──
+async function loadPlaylists() {
+  let items = [];
+  let url = '/me/playlists?limit=50';
+  while (url) {
+    const r = await api(url.startsWith('/') ? url : url.replace('https://api.spotify.com/v1',''));
+    items = items.concat(r.items);
+    url = r.next ? r.next.replace('https://api.spotify.com/v1','') : null;
+  }
+  allPlaylists = items;
+  renderAnalyzerPlaylists();
+  renderSorterPlaylists();
+}
+
+function renderAnalyzerPlaylists() {
+  const el = document.getElementById('analyzer-playlists');
+  el.innerHTML = allPlaylists.map(p => `
+    <div class="playlist-card" onclick="analyzePlaylist('${p.id}')">
+      <img class="playlist-img" src="${p.images && p.images[0] ? p.images[0].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
+      <div class="playlist-name">${esc(p.name)}</div>
+      <div class="playlist-meta">${p.tracks.total} tracks</div>
+    </div>
+  `).join('');
+}
+
+function renderSorterPlaylists() {
+  const el = document.getElementById('sorter-playlists');
+  el.innerHTML = allPlaylists.map(p => `
+    <div class="playlist-card" id="sp-${p.id}" onclick="selectMasterPlaylist('${p.id}')">
+      <img class="playlist-img" src="${p.images && p.images[0] ? p.images[0].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
+      <div class="playlist-name">${esc(p.name)}</div>
+      <div class="playlist-meta">${p.tracks.total} tracks</div>
+    </div>
+  `).join('');
+}
+
+// ── ANALYZER ──
+async function analyzePlaylist(id) {
+  if (analyzedPlaylistId === id) return;
+  analyzedPlaylistId = id;
+  document.querySelectorAll('#analyzer-playlists .playlist-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('analyzer-result').style.display = 'none';
+
+  const card = document.querySelector(`#analyzer-playlists .playlist-card[onclick*="${id}"]`);
+  if (card) card.classList.add('selected');
+
+  const res = document.getElementById('analyzer-result');
+  res.style.display = '';
+  document.getElementById('analyzer-tracks').innerHTML = '<div class="spinner"></div>';
+  document.getElementById('genre-bars').innerHTML = '';
+  document.getElementById('analyzer-stats').innerHTML = '';
+
+  // Fetch tracks (up to 200 for speed)
+  let tracks = [];
+  let offset = 0;
+  while (tracks.length < 200) {
+    const r = await getAllPlaylistTracks(id, 100, offset);
+    const valid = r.items.filter(i => i.track && i.track.id).map(i => i.track);
+    tracks = tracks.concat(valid);
+    if (!r.next || valid.length < 100) break;
+    offset += 100;
+  }
+
+  // Stats
+  const totalMs = tracks.reduce((s, t) => s + (t.duration_ms || 0), 0);
+  document.getElementById('analyzer-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Tracks</div><div class="stat-val">${tracks.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Duration</div><div class="stat-val">${msToHM(totalMs)}</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Track Length</div><div class="stat-val">${msToMin(tracks.length ? totalMs/tracks.length : 0)}</div></div>
+  `;
+
+  // Render table first (no genres yet)
+  renderAnalyzerTracks(tracks, {});
+
+  // Fetch genres in batches (5 at a time)
+  const genreMap = {};
+  for (let i = 0; i < tracks.length; i += 5) {
+    const batch = tracks.slice(i, i+5);
+    await Promise.all(batch.map(async t => {
+      const g = await getGenreForTrack(t);
+      if (g) {
+        genreMap[t.id] = g;
+        const key = g;
+        genreMap['_counts'] = genreMap['_counts'] || {};
+        genreMap['_counts'][key] = (genreMap['_counts'][key] || 0) + 1;
+      }
+    }));
+    renderAnalyzerTracks(tracks, genreMap);
+    renderGenreBars(genreMap['_counts'] || {}, tracks.length);
+  }
+  // Update stats with genre count
+  const uniqueGenres = Object.keys(genreMap['_counts'] || {}).length;
+  document.getElementById('analyzer-stats').innerHTML += `
+    <div class="stat-card"><div class="stat-label">Unique Genres</div><div class="stat-val">${uniqueGenres}</div></div>
+  `;
+}
+
+function renderAnalyzerTracks(tracks, genreMap) {
+  document.getElementById('analyzer-tracks').innerHTML = tracks.map((t, i) => `
+    <div class="track-row">
+      <div class="col-num">${i+1}</div>
+      <img class="track-art" src="${t.album && t.album.images && t.album.images[2] ? t.album.images[2].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
+      <div class="track-info">
+        <div class="track-name">${esc(t.name)}</div>
+        <div class="track-artist">${esc(t.artists.map(a=>a.name).join(', '))}</div>
+      </div>
+      <div style="width:120px;"><span class="genre-pill ${genreMap[t.id] ? 'has-genre' : ''}">${genreMap[t.id] ? esc(genreMap[t.id]) : '—'}</span></div>
+      <div class="col-dur">${msToMin(t.duration_ms)}</div>
+    </div>
+  `).join('');
+}
+
+function renderGenreBars(counts, total) {
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const max = sorted[0] ? sorted[0][1] : 1;
+  document.getElementById('genre-bars').innerHTML = sorted.map(([g,n]) => `
+    <div class="genre-bar-row">
+      <div class="genre-label">${esc(g)}</div>
+      <div class="genre-bar-bg"><div class="genre-bar-fill" style="width:${Math.round(n/max*100)}%"></div></div>
+      <div class="genre-pct">${Math.round(n/total*100)}%</div>
+    </div>
+  `).join('');
+}
+
+// ── SORTER ──
+async function selectMasterPlaylist(id) {
+  document.querySelectorAll('#sorter-playlists .playlist-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('sp-' + id).classList.add('selected');
+  sorterPlaylistId = id;
+  sorterTracks = [];
+  sorterOffset = 0;
+  document.getElementById('sorter-tracks-wrap').style.display = '';
+  document.getElementById('sorter-tracks').innerHTML = '<div class="spinner"></div>';
+  document.getElementById('load-more-btn').style.display = 'none';
+  await loadSorterBatch();
+}
+
+async function loadSorterBatch() {
+  const r = await getAllPlaylistTracks(sorterPlaylistId, 50, sorterOffset);
+  sorterTotal = r.total;
+  const newTracks = r.items.filter(i => i.track && i.track.id).map(i => i.track);
+  sorterTracks = sorterTracks.concat(newTracks);
+  sorterOffset += newTracks.length;
+
+  // Fetch genres for new tracks
+  for (let i = 0; i < newTracks.length; i += 5) {
+    await Promise.all(newTracks.slice(i, i+5).map(async t => {
+      t._genre = await getGenreForTrack(t);
+    }));
+    renderSorterTracks();
+  }
+
+  // Genre filter options
+  const genres = [...new Set(sorterTracks.map(t=>t._genre).filter(Boolean))].sort();
+  const sel = document.getElementById('sorter-genre-filter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All genres</option>' + genres.map(g=>`<option value="${esc(g)}" ${g===cur?'selected':''}>${esc(g)}</option>`).join('');
+
+  document.getElementById('load-more-btn').style.display = sorterOffset < sorterTotal ? '' : 'none';
+}
+
+async function loadMoreSorterTracks() {
+  document.getElementById('load-more-btn').textContent = 'Loading...';
+  await loadSorterBatch();
+  document.getElementById('load-more-btn').textContent = 'Load more tracks';
+}
+
+function renderSorterTracks() {
+  const search = (document.getElementById('sorter-search').value || '').toLowerCase();
+  const genreFilter = document.getElementById('sorter-genre-filter').value;
+  const filtered = sorterTracks.filter(t => {
+    if (search && !t.name.toLowerCase().includes(search) && !t.artists.map(a=>a.name.toLowerCase()).join(' ').includes(search)) return false;
+    if (genreFilter && t._genre !== genreFilter) return false;
+    return true;
+  });
+  document.getElementById('sorter-tracks').innerHTML = filtered.map((t, i) => `
+    <div class="track-row">
+      <div class="col-num">${i+1}</div>
+      <img class="track-art" src="${t.album && t.album.images && t.album.images[2] ? t.album.images[2].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
+      <div class="track-info">
+        <div class="track-name">${esc(t.name)}</div>
+        <div class="track-artist">${esc(t.artists.map(a=>a.name).join(', '))}</div>
+      </div>
+      <div style="width:130px;"><span class="genre-pill ${t._genre ? 'has-genre' : ''}">${t._genre ? esc(t._genre) : '—'}</span></div>
+      <div style="width:160px;">
+        <button class="add-btn" id="add-${esc(t.id)}" onclick="openAddModal('${esc(t.id)}','${esc(t.name)}')">+ Add to playlist</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterSorterTracks() { renderSorterTracks(); }
+
+// ── MODAL ──
+function openAddModal(trackId, trackName) {
+  pendingAddTrack = trackId;
+  document.getElementById('modal-title').textContent = 'Add to playlist';
+  document.getElementById('modal-sub').textContent = `"${trackName}" → choose a destination`;
+  const picker = document.getElementById('modal-picker');
+  const dest = allPlaylists.filter(p => p.id !== sorterPlaylistId);
+  picker.innerHTML = dest.map(p => `
+    <div class="picker-row" onclick="addTrackToPlaylist('${p.id}','${esc(p.name)}')">
+      <img class="picker-img" src="${p.images && p.images[0] ? p.images[0].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
+      <div>
+        <div class="picker-name">${esc(p.name)}</div>
+        <div class="picker-meta">${p.tracks.total} tracks</div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  pendingAddTrack = null;
+}
+
+async function addTrackToPlaylist(playlistId, playlistName) {
+  closeModal();
+  if (!pendingAddTrack) return;
+  const trackUri = `spotify:track:${pendingAddTrack}`;
+  const r = await api(`/playlists/${playlistId}/tracks`, 'POST', { uris: [trackUri] });
+  if (r && r.snapshot_id) {
+    showToast(`Added to "${playlistName}"`, 'ok');
+    const btn = document.getElementById('add-' + pendingAddTrack);
+    if (btn) { btn.textContent = '✓ Added'; btn.classList.add('done'); btn.disabled = true; }
+    // Update local count
+    const pl = allPlaylists.find(p=>p.id===playlistId);
+    if (pl) pl.tracks.total++;
+  } else {
+    showToast('Error adding track', 'err');
+  }
+}
+
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => { if (b.textContent.toLowerCase().includes(name)) b.classList.add('active'); });
+}
+
+// ── UTILS ──
+function msToHM(ms) {
+  const h = Math.floor(ms/3600000);
+  const m = Math.floor((ms%3600000)/60000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+function msToMin(ms) {
+  const m = Math.floor(ms/60000);
+  const s = Math.floor((ms%60000)/1000);
+  return `${m}:${s.toString().padStart(2,'0')}`;
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  void t.offsetWidth;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
