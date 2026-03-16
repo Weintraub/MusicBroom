@@ -26,8 +26,7 @@ async function analyzePlaylist(id) {
   const res = document.getElementById('analyzer-result');
   res.style.display = '';
   document.getElementById('analyzer-tracks').innerHTML = '<div class="spinner"></div>';
-  document.getElementById('genre-bars').innerHTML = '';
-  document.getElementById('analyzer-stats').innerHTML = '';
+document.getElementById('analyzer-stats').innerHTML = '';
 
   // Fetch tracks (up to 200 for speed)
   let tracks = [];
