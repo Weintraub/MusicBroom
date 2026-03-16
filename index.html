@@ -821,7 +821,7 @@ async function loadPlaylists() {
     if (!r.next || r.items.length < 50) break;
     offset += 50;
   }
-  allPlaylists = items.filter(p => p && p.id && p.tracks);
+  allPlaylists = items.filter(p => p && p.id);
   renderAnalyzerPlaylists();
   renderSorterPlaylists();
 }
@@ -832,7 +832,7 @@ function renderAnalyzerPlaylists() {
     <div class="playlist-card" onclick="analyzePlaylist('${p.id}')">
       <img class="playlist-img" src="${p.images && p.images[0] ? p.images[0].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
       <div class="playlist-name">${esc(p.name)}</div>
-      <div class="playlist-meta">${p.tracks.total} tracks</div>
+      <div class="playlist-meta">${(p.tracks || p.items || {}).total} tracks</div>
     </div>
   `).join('');
 }
@@ -843,7 +843,7 @@ function renderSorterPlaylists() {
     <div class="playlist-card" id="sp-${p.id}" onclick="selectMasterPlaylist('${p.id}')">
       <img class="playlist-img" src="${p.images && p.images[0] ? p.images[0].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
       <div class="playlist-name">${esc(p.name)}</div>
-      <div class="playlist-meta">${p.tracks.total} tracks</div>
+      <div class="playlist-meta">${(p.tracks || p.items || {}).total} tracks</div>
     </div>
   `).join('');
 }
@@ -1017,7 +1017,7 @@ function openAddModal(trackId, trackName) {
       <img class="picker-img" src="${p.images && p.images[0] ? p.images[0].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
       <div>
         <div class="picker-name">${esc(p.name)}</div>
-        <div class="picker-meta">${p.tracks.total} tracks</div>
+        <div class="picker-meta">${(p.tracks || p.items || {}).total} tracks</div>
       </div>
     </div>
   `).join('');
@@ -1040,7 +1040,7 @@ async function addTrackToPlaylist(playlistId, playlistName) {
     if (btn) { btn.textContent = '✓ Added'; btn.classList.add('done'); btn.disabled = true; }
     // Update local count
     const pl = allPlaylists.find(p=>p.id===playlistId);
-    if (pl) pl.tracks.total++;
+    if (pl) { const t = pl.tracks || pl.items; if (t) t.total++; }
   } else {
     showToast('Error adding track', 'err');
   }
