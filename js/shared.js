@@ -1,5 +1,5 @@
 // ── VERSION ──
-const VERSION = 'v1.7.4';
+const VERSION = 'v1.7.5';
 document.querySelector('.version-badge').textContent = VERSION;
 
 // ── CONFIG & SHARED STATE ──
@@ -41,21 +41,6 @@ async function getAllPlaylistTracks(playlistId, limit=100, offset=0) {
   return api(`/playlists/${playlistId}/items?limit=${limit}&offset=${offset}&fields=total,next,items(item(id,name,duration_ms,popularity,artists(id,name),album(images)))`);
 }
 
-async function getAudioFeatures(ids) {
-  const results = [];
-  for (let i = 0; i < ids.length; i += 100) {
-    const chunk = ids.slice(i, i + 100);
-    const r = await api(`/audio-features?ids=${chunk.join(',')}`);
-    if (r && r.audio_features) results.push(...r.audio_features);
-  }
-  return results;
-}
-
-const KEY_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-function keyLabel(k, mode) {
-  if (k == null || k < 0) return '—';
-  return KEY_NAMES[k] + ' ' + (mode === 1 ? 'maj' : 'min');
-}
 
 // Tags to skip — personal markers, not genres
 const _skipTags = new Set(['seen live','favourites','favorites','love','awesome','amazing','beautiful','indie','all','music','mellow','chill']);

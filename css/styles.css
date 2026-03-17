@@ -385,28 +385,6 @@ main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
 .add-btn.done { border-color: #2a4a2a; color: #2a8a2a; cursor: default; }
 .col-num { width: 28px; text-align: right; color: var(--text3); font-size: 12px; flex-shrink: 0; }
 .col-dur { width: 52px; text-align: right; color: var(--text3); font-size: 12px; flex-shrink: 0; }
-.track-audio {
-  width: 80px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-family: var(--font-mono);
-}
-.track-audio-right {
-  width: 100px;
-}
-.track-audio-bpm {
-  font-size: 13px;
-  color: var(--text);
-  font-weight: 500;
-}
-.track-audio-bpm span { font-size: 10px; color: var(--text3); }
-.track-audio-key {
-  font-size: 11px;
-  color: var(--text2);
-}
-.track-audio-empty { color: var(--text3); }
 .track-audio-stat {
   font-size: 11px;
   color: var(--text2);
