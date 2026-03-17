@@ -82,7 +82,7 @@ function renderAnalyzerTracks(tracks) {
         <div class="track-name">${esc(t.name)}</div>
         <div class="track-artist">${esc(t.artists.map(a=>a.name).join(', '))}</div>
       </div>
-      ${pop != null ? `<div class="track-audio-stat"><span class="track-audio-label">POP</span> ${pop}</div>` : ''}
+      ${pop != null ? `<div class="track-audio-stat"><span class="track-audio-label">Popularity</span> ${pop}</div>` : ''}
       <div class="col-dur">${msToMin(t.duration_ms)}</div>
     </div>`;
   }).join('');
