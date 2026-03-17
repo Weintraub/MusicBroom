@@ -1,5 +1,5 @@
 // ── VERSION ──
-const VERSION = 'v1.7.7';
+const VERSION = 'v1.7.8';
 document.querySelector('.version-badge').textContent = VERSION;
 
 // ── CONFIG & SHARED STATE ──
@@ -16,6 +16,8 @@ let currentUserId = null;
 let playlistFilter = 'all'; // 'all' | 'mine'
 let playlistSort = 'default'; // 'default' | 'tracks-asc' | 'tracks-desc'
 let playlistHidePrivate = false;
+let playlistBopOnly = false;
+let currentUserDisplayName = '';
 let allPlaylists = [];
 
 // ── API ──
@@ -89,6 +91,9 @@ function getFilteredSortedPlaylists() {
   if (playlistHidePrivate) {
     list = list.filter(p => p.public !== false);
   }
+  if (playlistBopOnly) {
+    list = list.filter(p => /bop$/i.test(p.name));
+  }
   if (playlistSort === 'tracks-asc') {
     list = list.slice().sort((a, b) => (a.tracks || a.items || {}).total - (b.tracks || b.items || {}).total);
   } else if (playlistSort === 'tracks-desc') {
@@ -118,6 +123,14 @@ function setPlaylistSort(val) {
   if (typeof renderSorterPlaylists === 'function') renderSorterPlaylists();
 }
 
+function setPlaylistBopOnly(val) {
+  playlistBopOnly = val;
+  document.querySelectorAll('.pl-filter-bop').forEach(btn => btn.classList.toggle('active', val));
+  if (typeof renderAnalyzerPlaylists === 'function') renderAnalyzerPlaylists();
+  if (typeof renderSorterPlaylists === 'function') renderSorterPlaylists();
+  if (typeof renderModalPicker === 'function') renderModalPicker();
+}
+
 // ── LOAD PLAYLISTS ──
 async function loadPlaylists() {
   let items = [];
@@ -139,11 +152,15 @@ async function initApp() {
   if (!accessToken) { location.href = 'index.html'; return; }
   const me = await api('/me');
   currentUserId = me.id;
-  document.getElementById('user-name').textContent = me.display_name || me.id;
+  currentUserDisplayName = me.display_name || me.id;
+  document.getElementById('user-name').textContent = currentUserDisplayName;
   if (me.images && me.images[0]) {
     const av = document.getElementById('user-avatar');
     av.src = me.images[0].url;
     av.style.display = '';
+  }
+  if (/^daniel$/i.test(currentUserDisplayName)) {
+    document.querySelectorAll('.pl-filter-bop').forEach(el => el.style.display = '');
   }
   await loadPlaylists();
 }

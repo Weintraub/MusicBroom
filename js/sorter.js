@@ -152,13 +152,14 @@ function prevSorterPage() {
 function filterSorterTracks() { sorterPage = 0; renderSorterTracks(); }
 
 // ── MODAL ──
-function openAddModal(trackId, trackName) {
-  pendingAddTrack = trackId;
-  document.getElementById('modal-title').textContent = 'Add to playlist';
-  document.getElementById('modal-sub').textContent = `"${trackName}" → choose a destination`;
+function renderModalPicker() {
   const picker = document.getElementById('modal-picker');
-  const dest = allPlaylists.filter(p => p.id !== sorterPlaylistId);
-  picker.innerHTML = dest.map(p => `
+  if (!picker) return;
+  let dest = allPlaylists.filter(p => p.id !== sorterPlaylistId);
+  if (playlistBopOnly) dest = dest.filter(p => /bop$/i.test(p.name));
+  picker.innerHTML = dest.length === 0
+    ? '<div class="empty-msg">No playlists found.</div>'
+    : dest.map(p => `
     <div class="picker-row" onclick="addTrackToPlaylist('${p.id}','${esc(p.name)}')">
       <img class="picker-img" src="${p.images && p.images[0] ? p.images[0].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
       <div>
@@ -167,6 +168,13 @@ function openAddModal(trackId, trackName) {
       </div>
     </div>
   `).join('');
+}
+
+function openAddModal(trackId, trackName) {
+  pendingAddTrack = trackId;
+  document.getElementById('modal-title').textContent = 'Add to playlist';
+  document.getElementById('modal-sub').textContent = `"${trackName}" → choose a destination`;
+  renderModalPicker();
   document.getElementById('modal').classList.add('open');
 }
 
