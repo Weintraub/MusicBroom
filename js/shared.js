@@ -159,7 +159,7 @@ async function initApp() {
     av.src = me.images[0].url;
     av.style.display = '';
   }
-  if (/^daniel$/i.test(currentUserDisplayName)) {
+  if (/daniel/i.test(currentUserDisplayName)) {
     document.querySelectorAll('.pl-filter-bop').forEach(el => el.style.display = '');
   }
   await loadPlaylists();
