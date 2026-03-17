@@ -57,14 +57,11 @@ async function analyzePlaylist(id) {
 
   // Stats
   const totalMs = tracks.reduce((s, t) => s + (t.duration_ms || 0), 0);
-  const tracksWithPop = tracks.filter(t => t.popularity != null);
-  const avgPop = tracksWithPop.length ? Math.round(tracksWithPop.reduce((s, t) => s + t.popularity, 0) / tracksWithPop.length) : null;
 
   document.getElementById('analyzer-stats').innerHTML = `
     <div class="stat-card"><div class="stat-label">Tracks</div><div class="stat-val">${tracks.length}</div></div>
     <div class="stat-card"><div class="stat-label">Total Duration</div><div class="stat-val">${msToHM(totalMs)}</div></div>
     <div class="stat-card"><div class="stat-label">Avg Track Length</div><div class="stat-val">${msToMin(tracks.length ? totalMs/tracks.length : 0)}</div></div>
-    ${avgPop != null ? `<div class="stat-card"><div class="stat-label">Avg Popularity</div><div class="stat-val">${avgPop}</div></div>` : ''}
   `;
 
   analyzedPlaylistId = id;
@@ -72,9 +69,7 @@ async function analyzePlaylist(id) {
 }
 
 function renderAnalyzerTracks(tracks) {
-  document.getElementById('analyzer-tracks').innerHTML = tracks.map((t, i) => {
-    const pop = t.popularity != null ? t.popularity : null;
-    return `
+  document.getElementById('analyzer-tracks').innerHTML = tracks.map((t, i) => `
     <div class="track-row">
       <div class="col-num">${i+1}</div>
       <img class="track-art" src="${t.album && t.album.images && t.album.images[2] ? t.album.images[2].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
@@ -82,10 +77,9 @@ function renderAnalyzerTracks(tracks) {
         <div class="track-name">${esc(t.name)}</div>
         <div class="track-artist">${esc(t.artists.map(a=>a.name).join(', '))}</div>
       </div>
-      ${pop != null ? `<div class="track-audio-stat"><span class="track-audio-label">Popularity</span> ${pop}</div>` : ''}
       <div class="col-dur">${msToMin(t.duration_ms)}</div>
-    </div>`;
-  }).join('');
+    </div>`
+  ).join('');
 }
 
 initApp();

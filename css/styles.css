@@ -385,17 +385,6 @@ main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
 .add-btn.done { border-color: #2a4a2a; color: #2a8a2a; cursor: default; }
 .col-num { width: 28px; text-align: right; color: var(--text3); font-size: 12px; flex-shrink: 0; }
 .col-dur { width: 52px; text-align: right; color: var(--text3); font-size: 12px; flex-shrink: 0; }
-.track-audio-stat {
-  font-size: 11px;
-  color: var(--text2);
-  white-space: nowrap;
-}
-.track-audio-label {
-  font-size: 9px;
-  color: var(--text3);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
 
 /* ── MODAL ── */
 .modal-backdrop {
