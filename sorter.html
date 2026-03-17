@@ -68,7 +68,6 @@
     <div class="playlist-controls" style="margin-bottom:16px;">
       <button class="btn-ghost pl-filter-mine" onclick="setPlaylistFilter(playlistFilter === 'mine' ? 'all' : 'mine')">My playlists</button>
       <button class="btn-ghost pl-filter-public" onclick="setPlaylistHidePrivate(!playlistHidePrivate)">Public only</button>
-      <button class="btn-ghost pl-filter-bop" style="display:none" onclick="setPlaylistBopOnly(!playlistBopOnly)">Bops only</button>
       <select class="pl-sort-select" onchange="setPlaylistSort(this.value)">
         <option value="default">Default order</option>
         <option value="tracks-desc">Most tracks first</option>

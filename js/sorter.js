@@ -157,6 +157,7 @@ function renderModalPicker() {
   if (!picker) return;
   let dest = allPlaylists.filter(p => p.id !== sorterPlaylistId);
   if (playlistBopOnly) dest = dest.filter(p => /bop$/i.test(p.name));
+  dest = dest.slice().sort((a, b) => (b.tracks || b.items || {}).total - (a.tracks || a.items || {}).total);
   picker.innerHTML = dest.length === 0
     ? '<div class="empty-msg">No playlists found.</div>'
     : dest.map(p => `
