@@ -1,5 +1,4 @@
-let sorterTracks = [];
-let sorterOffset = 0;
+let sorterCurrentPageTracks = [];
 let sorterTotal = 0;
 let sorterPlaylistId = null;
 let pendingAddTrack = null;
@@ -40,43 +39,59 @@ async function selectMasterPlaylist(id) {
     const nameEl = document.getElementById('selected-playlist-name');
     nameEl.textContent = pl.name;
     nameEl.style.display = '';
+    sorterTotal = (pl.tracks || pl.items || {}).total || 0;
   }
-  sorterTracks = [];
-  sorterOffset = 0;
+  sorterCurrentPageTracks = [];
   sorterPage = 0;
   document.getElementById('sorter-tracks-wrap').style.display = '';
   document.getElementById('sorter-tracks').innerHTML = '<div class="spinner"></div>';
   document.getElementById('sorter-pagination').innerHTML = '';
-  await loadSorterBatch();
+  await loadCurrentPage();
 }
 
-async function loadSorterBatch() {
-  const r = await getAllPlaylistTracks(sorterPlaylistId, 50, sorterOffset);
-  sorterTotal = r.total;
-  const newTracks = r.items.filter(i => (i.item || i.track) && (i.item || i.track).id).map(i => i.item || i.track);
-  sorterTracks = sorterTracks.concat(newTracks);
-  sorterOffset += newTracks.length;
+async function loadCurrentPage() {
+  const reverse = document.getElementById('sorter-sort').value === 'default-desc';
+  const totalPages = Math.max(1, Math.ceil(sorterTotal / SORTER_PAGE_SIZE));
+  const forwardPage = reverse ? (totalPages - 1 - sorterPage) : sorterPage;
+  const spotifyOffset = forwardPage * SORTER_PAGE_SIZE;
 
-  // Fetch genres for new tracks
-  for (let i = 0; i < newTracks.length; i += 5) {
-    await Promise.all(newTracks.slice(i, i+5).map(async t => {
+  document.getElementById('sorter-tracks').innerHTML = '<div class="spinner"></div>';
+  document.getElementById('sorter-pagination').innerHTML = '';
+
+  const r = await getAllPlaylistTracks(sorterPlaylistId, SORTER_PAGE_SIZE, spotifyOffset);
+  sorterTotal = r.total;
+  let tracks = r.items.filter(i => (i.item || i.track) && (i.item || i.track).id).map(i => i.item || i.track);
+  if (reverse) tracks = tracks.reverse();
+
+  // Store playlist position on each track for display
+  tracks.forEach((t, i) => {
+    t._playlistPos = reverse
+      ? sorterTotal - forwardPage * SORTER_PAGE_SIZE - i
+      : forwardPage * SORTER_PAGE_SIZE + i + 1;
+  });
+
+  sorterCurrentPageTracks = tracks;
+  renderSorterTracks();
+
+  // Fetch genres progressively
+  for (let i = 0; i < tracks.length; i += 5) {
+    await Promise.all(tracks.slice(i, i+5).map(async t => {
       t._genres = await getGenreForTrack(t);
     }));
     renderSorterTracks();
   }
 
-  // Genre filter options
-  const genres = [...new Set(sorterTracks.flatMap(t=>t._genres||[]))].sort();
+  // Update genre filter options
+  const genres = [...new Set(sorterCurrentPageTracks.flatMap(t => t._genres || []))].sort();
   const sel = document.getElementById('sorter-genre-filter');
   const cur = sel.value;
-  sel.innerHTML = '<option value="">All genres</option>' + genres.map(g=>`<option value="${esc(g)}" ${g===cur?'selected':''}>${esc(g)}</option>`).join('');
-
+  sel.innerHTML = '<option value="">All genres</option>' + genres.map(g => `<option value="${esc(g)}" ${g === cur ? 'selected' : ''}>${esc(g)}</option>`).join('');
 }
 
 function getFilteredSorterTracks() {
   const search = (document.getElementById('sorter-search').value || '').toLowerCase();
   const genreFilter = document.getElementById('sorter-genre-filter').value;
-  return sorterTracks.filter(t => {
+  return sorterCurrentPageTracks.filter(t => {
     if (search && !t.name.toLowerCase().includes(search) && !t.artists.map(a=>a.name.toLowerCase()).join(' ').includes(search)) return false;
     if (genreFilter && !(t._genres||[]).includes(genreFilter)) return false;
     return true;
@@ -85,13 +100,11 @@ function getFilteredSorterTracks() {
 
 function renderSorterTracks() {
   const filtered = getFilteredSorterTracks();
-  const totalPages = Math.max(1, Math.ceil(filtered.length / SORTER_PAGE_SIZE));
-  if (sorterPage >= totalPages) sorterPage = totalPages - 1;
-  const start = sorterPage * SORTER_PAGE_SIZE;
-  const pageItems = filtered.slice(start, start + SORTER_PAGE_SIZE);
-  document.getElementById('sorter-tracks').innerHTML = pageItems.map((t, i) => `
+  document.getElementById('sorter-tracks').innerHTML = filtered.length === 0
+    ? '<div class="empty-msg">No tracks match filters.</div>'
+    : filtered.map(t => `
     <div class="track-row">
-      <div class="col-num">${start + i + 1}</div>
+      <div class="col-num">${t._playlistPos}</div>
       <img class="track-art" src="${t.album && t.album.images && t.album.images[2] ? t.album.images[2].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
       <div class="track-info">
         <div class="track-name">${esc(t.name)}</div>
@@ -103,53 +116,43 @@ function renderSorterTracks() {
       </div>
     </div>
   `).join('');
-  renderSorterPagination(filtered.length, totalPages);
+  renderSorterPagination();
 }
 
-function renderSorterPagination(filteredCount, totalPages) {
+function renderSorterPagination() {
   const el = document.getElementById('sorter-pagination');
   if (!el) return;
-  if (filteredCount === 0) { el.innerHTML = ''; return; }
-  const hasPrev = sorterPage > 0;
-  const hasNext = sorterPage < totalPages - 1 || sorterOffset < sorterTotal;
-  const isFiltered = document.getElementById('sorter-search').value || document.getElementById('sorter-genre-filter').value;
-  const knownTotalPages = !isFiltered ? Math.ceil(sorterTotal / SORTER_PAGE_SIZE) : totalPages;
-  const uncertain = isFiltered && sorterOffset < sorterTotal;
-  const pageLabel = `Page ${sorterPage + 1} of ${knownTotalPages}${uncertain ? '+' : ''}`;
+  const totalPages = Math.max(1, Math.ceil(sorterTotal / SORTER_PAGE_SIZE));
   el.innerHTML = `
-    <button class="btn-ghost" onclick="prevSorterPage()" ${hasPrev ? '' : 'disabled'}>← Prev</button>
-    <span class="pagination-label">${pageLabel}</span>
-    <button class="btn-ghost" onclick="nextSorterPage()" ${hasNext ? '' : 'disabled'}>Next →</button>
+    <button class="btn-ghost" onclick="prevSorterPage()" ${sorterPage > 0 ? '' : 'disabled'}>← Prev</button>
+    <span class="pagination-label">Page ${sorterPage + 1} of ${totalPages}</span>
+    <button class="btn-ghost" onclick="nextSorterPage()" ${sorterPage < totalPages - 1 ? '' : 'disabled'}>Next →</button>
   `;
 }
 
 async function nextSorterPage() {
-  const filtered = getFilteredSorterTracks();
-  const totalPages = Math.ceil(filtered.length / SORTER_PAGE_SIZE);
+  const totalPages = Math.ceil(sorterTotal / SORTER_PAGE_SIZE);
   if (sorterPage < totalPages - 1) {
     sorterPage++;
-    renderSorterTracks();
     window.scrollTo(0, 0);
-  } else if (sorterOffset < sorterTotal) {
-    document.getElementById('sorter-pagination').innerHTML = '<div class="spinner" style="margin:auto;"></div>';
-    await loadSorterBatch();
-    const newFiltered = getFilteredSorterTracks();
-    const newTotalPages = Math.ceil(newFiltered.length / SORTER_PAGE_SIZE);
-    if (sorterPage < newTotalPages - 1) sorterPage++;
-    renderSorterTracks();
-    window.scrollTo(0, 0);
+    await loadCurrentPage();
   }
 }
 
-function prevSorterPage() {
+async function prevSorterPage() {
   if (sorterPage > 0) {
     sorterPage--;
-    renderSorterTracks();
     window.scrollTo(0, 0);
+    await loadCurrentPage();
   }
 }
 
-function filterSorterTracks() { sorterPage = 0; renderSorterTracks(); }
+function filterSorterTracks() { renderSorterTracks(); }
+
+async function changeSorterSort() {
+  sorterPage = 0;
+  if (sorterPlaylistId) await loadCurrentPage();
+}
 
 // ── MODAL ──
 function renderModalPicker() {
