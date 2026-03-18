@@ -230,8 +230,8 @@ async function removeTrackFromMaster(trackId, trackName) {
   closeModal();
   if (!trackId || !sorterPlaylistId) return;
   try {
-    const r = await api(`/playlists/${sorterPlaylistId}/tracks`, 'DELETE', {
-      tracks: [{ uri: `spotify:track:${trackId}` }]
+    const r = await api(`/playlists/${sorterPlaylistId}/items`, 'DELETE', {
+      items: [{ uri: `spotify:track:${trackId}` }]
     });
     if (r && r.snapshot_id) {
       showToast(`Removed "${trackName}" from source`, 'ok');
