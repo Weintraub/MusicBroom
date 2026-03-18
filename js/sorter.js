@@ -51,9 +51,9 @@ async function selectMasterPlaylist(id) {
 
 async function loadCurrentPage() {
   const reverse = document.getElementById('sorter-sort').value === 'default-desc';
-  const totalPages = Math.max(1, Math.ceil(sorterTotal / SORTER_PAGE_SIZE));
-  const forwardPage = reverse ? (totalPages - 1 - sorterPage) : sorterPage;
-  const spotifyOffset = forwardPage * SORTER_PAGE_SIZE;
+  const spotifyOffset = reverse
+    ? Math.max(0, sorterTotal - (sorterPage + 1) * SORTER_PAGE_SIZE)
+    : sorterPage * SORTER_PAGE_SIZE;
 
   document.getElementById('sorter-tracks').innerHTML = '<div class="spinner"></div>';
   document.getElementById('sorter-pagination').innerHTML = '';
@@ -61,13 +61,18 @@ async function loadCurrentPage() {
   const r = await getAllPlaylistTracks(sorterPlaylistId, SORTER_PAGE_SIZE, spotifyOffset);
   sorterTotal = r.total;
   let tracks = r.items.filter(i => (i.item || i.track) && (i.item || i.track).id).map(i => i.item || i.track);
-  if (reverse) tracks = tracks.reverse();
+  if (reverse) {
+    tracks = tracks.reverse();
+    // Trim excess tracks on the last reverse page (when total isn't a multiple of page size)
+    const pageTrackCount = sorterTotal - sorterPage * SORTER_PAGE_SIZE;
+    if (pageTrackCount < SORTER_PAGE_SIZE) tracks = tracks.slice(SORTER_PAGE_SIZE - pageTrackCount);
+  }
 
   // Store playlist position on each track for display
   tracks.forEach((t, i) => {
     t._playlistPos = reverse
-      ? sorterTotal - forwardPage * SORTER_PAGE_SIZE - i
-      : forwardPage * SORTER_PAGE_SIZE + i + 1;
+      ? sorterTotal - sorterPage * SORTER_PAGE_SIZE - i
+      : sorterPage * SORTER_PAGE_SIZE + i + 1;
   });
 
   sorterCurrentPageTracks = tracks;
