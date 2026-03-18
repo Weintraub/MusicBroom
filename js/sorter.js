@@ -103,7 +103,7 @@ function renderSorterTracks() {
   document.getElementById('sorter-tracks').innerHTML = filtered.length === 0
     ? '<div class="empty-msg">No tracks match filters.</div>'
     : filtered.map(t => `
-    <div class="track-row">
+    <div class="track-row" id="track-row-${esc(t.id)}">
       <div class="col-num">${t._playlistPos}</div>
       <img class="track-art" src="${t.album && t.album.images && t.album.images[2] ? t.album.images[2].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
       <div class="track-info">
@@ -200,11 +200,51 @@ async function addTrackToPlaylist(playlistId, playlistName) {
       if (btn) { btn.textContent = '✓ Added'; btn.classList.add('done'); btn.disabled = true; }
       const pl = allPlaylists.find(p=>p.id===playlistId);
       if (pl) { const t = pl.tracks || pl.items; if (t) t.total++; }
+      const trackName = (sorterCurrentPageTracks.find(t => t.id === trackId) || {}).name || '';
+      openRemovePrompt(trackId, trackName);
     } else {
       showToast('Error adding track', 'err');
     }
   } catch (e) {
     showToast(e.message || 'Error adding track', 'err');
+  }
+}
+
+function openRemovePrompt(trackId, trackName) {
+  const masterPl = allPlaylists.find(p => p.id === sorterPlaylistId);
+  const masterName = masterPl ? masterPl.name : 'source playlist';
+  document.getElementById('modal-title').textContent = 'Remove from source?';
+  document.getElementById('modal-sub').textContent = `Remove "${trackName}" from "${masterName}"?`;
+  const bopBtn = document.querySelector('.pl-filter-bop');
+  if (bopBtn) bopBtn.style.display = 'none';
+  document.getElementById('modal-picker').innerHTML = `
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn-primary" onclick="removeTrackFromMaster('${esc(trackId)}','${esc(trackName)}')">Yes, remove</button>
+      <button class="btn-ghost" onclick="closeModal()">No, keep it</button>
+    </div>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+async function removeTrackFromMaster(trackId, trackName) {
+  closeModal();
+  if (!trackId || !sorterPlaylistId) return;
+  try {
+    const r = await api(`/playlists/${sorterPlaylistId}/tracks`, 'DELETE', {
+      tracks: [{ uri: `spotify:track:${trackId}` }]
+    });
+    if (r && r.snapshot_id) {
+      showToast(`Removed "${trackName}" from source`, 'ok');
+      const row = document.getElementById('track-row-' + trackId);
+      if (row) row.remove();
+      sorterCurrentPageTracks = sorterCurrentPageTracks.filter(t => t.id !== trackId);
+      sorterTotal = Math.max(0, sorterTotal - 1);
+      renderSorterPagination();
+    } else {
+      showToast('Error removing track', 'err');
+    }
+  } catch (e) {
+    showToast(e.message || 'Error removing track', 'err');
   }
 }
 
