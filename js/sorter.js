@@ -318,12 +318,18 @@ async function playTrack(trackId) {
     spotifyPlayer.togglePlay();
     return;
   }
-  try {
-    await api(`/me/player/play?device_id=${encodeURIComponent(spotifyDeviceId)}`, 'PUT', {
-      uris: [`spotify:track:${trackId}`]
-    });
-  } catch(e) {
-    showToast(e.message || 'Playback error', 'err');
+  const r = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(spotifyDeviceId)}`, {
+    method: 'PUT',
+    headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ uris: [`spotify:track:${trackId}`] })
+  });
+  if (r.status === 401 || r.status === 403) {
+    showToast('Sign out and back in to enable playback', 'err');
+    return;
+  }
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    showToast(err?.error?.message || 'Playback error', 'err');
   }
 }
 
