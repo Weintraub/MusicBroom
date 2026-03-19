@@ -107,9 +107,15 @@ function renderSorterTracks() {
   const filtered = getFilteredSorterTracks();
   document.getElementById('sorter-tracks').innerHTML = filtered.length === 0
     ? '<div class="empty-msg">No tracks match filters.</div>'
-    : filtered.map(t => `
-    <div class="track-row" id="track-row-${esc(t.id)}">
-      <div class="col-num">${t._playlistPos}</div>
+    : filtered.map(t => {
+      const isCurrent = t.id === currentlyPlayingTrackId;
+      const isPlaying = isCurrent && playerIsPlaying;
+      const playCol = isCurrent
+        ? `<span class="track-play-icon active">${isPlaying ? '⏸' : '▶'}</span>`
+        : `<span class="track-num">${t._playlistPos}</span><span class="track-play-icon">▶</span>`;
+      return `
+    <div class="track-row${isCurrent ? ' now-playing' : ''}" id="track-row-${esc(t.id)}">
+      <div class="col-num track-play-col" onclick="playTrack('${esc(t.id)}')">${playCol}</div>
       <img class="track-art" src="${t.album && t.album.images && t.album.images[2] ? t.album.images[2].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
       <div class="track-info">
         <div class="track-name">${esc(t.name)}</div>
@@ -120,7 +126,7 @@ function renderSorterTracks() {
         <button class="add-btn" id="add-${esc(t.id)}" onclick="openAddModal('${esc(t.id)}','${esc(t.name)}')">+ Add to playlist</button>
       </div>
     </div>
-  `).join('');
+  `}).join('');
   renderSorterPagination();
 }
 
@@ -251,6 +257,122 @@ async function removeTrackFromMaster(trackId, trackName) {
   } catch (e) {
     showToast(e.message || 'Error removing track', 'err');
   }
+}
+
+// ── PLAYER ──
+let spotifyPlayer = null;
+let spotifyDeviceId = null;
+let playerCurrentState = null;
+let playerSeekDragging = false;
+let playerProgressInterval = null;
+let currentlyPlayingTrackId = null;
+let playerIsPlaying = false;
+
+window.onSpotifyWebPlaybackSDKReady = () => {
+  if (!accessToken) return;
+  spotifyPlayer = new Spotify.Player({
+    name: 'MusicBroom',
+    getOAuthToken: cb => cb(accessToken),
+    volume: 0.8
+  });
+
+  spotifyPlayer.addListener('ready', ({ device_id }) => {
+    spotifyDeviceId = device_id;
+  });
+
+  spotifyPlayer.addListener('not_ready', () => {
+    spotifyDeviceId = null;
+  });
+
+  spotifyPlayer.addListener('player_state_changed', state => {
+    if (!state) return;
+    playerCurrentState = state;
+    const prevId = currentlyPlayingTrackId;
+    const track = state.track_window.current_track;
+    playerIsPlaying = !state.paused;
+    currentlyPlayingTrackId = track.id;
+    updatePlayerBar(state);
+    if (prevId !== currentlyPlayingTrackId) renderSorterTracks();
+
+    if (!state.paused && !playerProgressInterval) {
+      playerProgressInterval = setInterval(tickPlayerProgress, 500);
+    } else if (state.paused && playerProgressInterval) {
+      clearInterval(playerProgressInterval);
+      playerProgressInterval = null;
+    }
+  });
+
+  spotifyPlayer.connect();
+};
+
+function tickPlayerProgress() {
+  if (playerSeekDragging || !spotifyPlayer) return;
+  spotifyPlayer.getCurrentState().then(s => {
+    if (s) updateSeekBar(s.position, s.duration);
+  });
+}
+
+async function playTrack(trackId) {
+  if (!spotifyDeviceId) { showToast('Player not ready', 'err'); return; }
+  if (trackId === currentlyPlayingTrackId) {
+    spotifyPlayer.togglePlay();
+    return;
+  }
+  try {
+    await api(`/me/player/play?device_id=${encodeURIComponent(spotifyDeviceId)}`, 'PUT', {
+      uris: [`spotify:track:${trackId}`]
+    });
+  } catch(e) {
+    showToast(e.message || 'Playback error', 'err');
+  }
+}
+
+function playerToggle() {
+  if (spotifyPlayer) spotifyPlayer.togglePlay();
+}
+
+function playerSeekInput(val) {
+  playerSeekDragging = true;
+  if (playerCurrentState) {
+    const pos = (val / 100) * playerCurrentState.duration;
+    document.getElementById('player-time-cur').textContent = msToMin(pos);
+    document.getElementById('player-seek').style.background =
+      `linear-gradient(to right, var(--green) ${val}%, var(--bg4) ${val}%)`;
+  }
+}
+
+function playerSeekCommit(val) {
+  playerSeekDragging = false;
+  if (spotifyPlayer && playerCurrentState) {
+    const pos = Math.round((val / 100) * playerCurrentState.duration);
+    spotifyPlayer.seek(pos);
+  }
+}
+
+function updatePlayerBar(state) {
+  const bar = document.getElementById('player-bar');
+  if (!bar) return;
+  bar.classList.add('visible');
+  document.body.classList.add('player-active');
+
+  const track = state.track_window.current_track;
+  document.getElementById('player-track-name').textContent = track.name;
+  document.getElementById('player-artist-name').textContent = track.artists.map(a => a.name).join(', ');
+  const img = track.album.images[0];
+  document.getElementById('player-art').src = img ? img.url : '';
+  document.getElementById('player-playpause').textContent = state.paused ? '▶' : '⏸';
+  updateSeekBar(state.position, state.duration);
+}
+
+function updateSeekBar(position, duration) {
+  if (playerSeekDragging) return;
+  const pct = duration > 0 ? (position / duration) * 100 : 0;
+  const seekEl = document.getElementById('player-seek');
+  if (!seekEl) return;
+  seekEl.value = pct;
+  seekEl.style.background = `linear-gradient(to right, var(--green) ${pct}%, var(--bg4) ${pct}%)`;
+  document.getElementById('player-time-cur').textContent = msToMin(position);
+  document.getElementById('player-time-dur').textContent = msToMin(duration);
 }
 
 initApp();

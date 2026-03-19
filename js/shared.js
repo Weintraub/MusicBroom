@@ -1,5 +1,5 @@
 // ── VERSION ──
-const VERSION = 'v1.8.3';
+const VERSION = 'v1.9.0';
 document.querySelector('.version-badge').textContent = VERSION;
 
 // ── CONFIG & SHARED STATE ──
@@ -7,7 +7,8 @@ const SCOPES = [
   'user-read-private','user-read-email',
   'playlist-read-private','playlist-read-collaborative',
   'playlist-modify-public','playlist-modify-private',
-  'user-top-read','user-read-recently-played'
+  'user-top-read','user-read-recently-played',
+  'streaming','user-modify-playback-state'
 ].join(' ');
 
 let CLIENT_ID = localStorage.getItem('mb_client_id') || '';

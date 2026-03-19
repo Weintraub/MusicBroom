@@ -102,8 +102,26 @@
   </div>
 </div>
 
+<!-- PLAYER BAR -->
+<div id="player-bar">
+  <img id="player-art" src="" alt="">
+  <div id="player-info">
+    <div id="player-track-name">–</div>
+    <div id="player-artist-name">–</div>
+  </div>
+  <button id="player-playpause" onclick="playerToggle()">▶</button>
+  <div id="player-timeline">
+    <span id="player-time-cur">0:00</span>
+    <input type="range" id="player-seek" min="0" max="100" value="0" step="0.1"
+      oninput="playerSeekInput(this.value)"
+      onchange="playerSeekCommit(this.value)">
+    <span id="player-time-dur">0:00</span>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
 <script src="js/shared.js"></script>
 <script src="js/sorter.js"></script>
 </body>
