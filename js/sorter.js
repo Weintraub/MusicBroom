@@ -65,7 +65,7 @@ async function loadCurrentPage() {
     tracks = tracks.reverse();
     // Trim excess tracks on the last reverse page (when total isn't a multiple of page size)
     const pageTrackCount = sorterTotal - sorterPage * SORTER_PAGE_SIZE;
-    if (pageTrackCount < SORTER_PAGE_SIZE) tracks = tracks.slice(SORTER_PAGE_SIZE - pageTrackCount);
+    if (pageTrackCount < SORTER_PAGE_SIZE) tracks = tracks.slice(tracks.length - pageTrackCount);
   }
 
   // Store playlist position on each track for display
