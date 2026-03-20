@@ -323,8 +323,18 @@ async function playTrack(trackId) {
     headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
     body: JSON.stringify({ uris: [`spotify:track:${trackId}`] })
   });
-  if (r.status === 401 || r.status === 403) {
+  if (r.status === 401) {
     showToast('Sign out and back in to enable playback', 'err');
+    return;
+  }
+  if (r.status === 403) {
+    const body = await r.json().catch(() => ({}));
+    const reason = body?.error?.reason;
+    if (reason === 'TRACK_NOT_PLAYABLE') {
+      showToast('This track is unavailable (removed from Spotify)', 'err');
+    } else {
+      showToast('Sign out and back in to enable playback', 'err');
+    }
     return;
   }
   if (!r.ok) {
