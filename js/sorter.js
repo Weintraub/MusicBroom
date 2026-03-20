@@ -123,7 +123,7 @@ function renderSorterTracks() {
       </div>
       <div style="width:300px;display:flex;flex-wrap:wrap;gap:4px;">${t._genres && t._genres.length ? t._genres.map(g=>`<span class="genre-pill has-genre">${esc(g)}</span>`).join('') : '<span class="genre-pill">—</span>'}</div>
       <div style="width:160px;">
-        <button class="add-btn" id="add-${esc(t.id)}" onclick="openAddModal('${esc(t.id)}','${esc(t.name)}')">+ Add to playlist</button>
+        <button class="add-btn" id="add-${esc(t.id)}" onclick="openAddModal('${esc(t.id)}','${escJS(t.name)}')">+ Add to playlist</button>
       </div>
     </div>
   `}).join('');
@@ -175,7 +175,7 @@ function renderModalPicker() {
   picker.innerHTML = dest.length === 0
     ? '<div class="empty-msg">No playlists found.</div>'
     : dest.map(p => `
-    <div class="picker-row" onclick="addTrackToPlaylist('${p.id}','${esc(p.name)}')">
+    <div class="picker-row" onclick="addTrackToPlaylist('${p.id}','${escJS(p.name)}')">
       <img class="picker-img" src="${p.images && p.images[0] ? p.images[0].url : ''}" alt="" onerror="this.style.background='var(--bg4)';this.src=''">
       <div>
         <div class="picker-name">${esc(p.name)}</div>
@@ -230,7 +230,7 @@ function openRemovePrompt(trackId, trackName) {
   if (bopBtn) bopBtn.style.display = 'none';
   document.getElementById('modal-picker').innerHTML = `
     <div style="display:flex;gap:10px;margin-top:8px;">
-      <button class="btn-primary" onclick="removeTrackFromMaster('${esc(trackId)}','${esc(trackName)}')">Yes, remove</button>
+      <button class="btn-primary" onclick="removeTrackFromMaster('${esc(trackId)}','${escJS(trackName)}')">Yes, remove</button>
       <button class="btn-ghost" onclick="closeModal()">No, keep it</button>
     </div>
   `;

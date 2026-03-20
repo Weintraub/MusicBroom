@@ -200,6 +200,9 @@ function msToMin(ms) {
 function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+function escJS(s) {
+  return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+}
 function showToast(msg, type='') {
   const t = document.getElementById('toast');
   t.textContent = msg;
